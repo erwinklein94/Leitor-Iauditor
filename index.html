@@ -5,574 +5,234 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>RUMO · Leitor de Ensaios de Dormente</title>
   <meta name="description" content="Leitor de relatórios iAuditor de dormente — apresenta campos, ensaios, medições, critérios e situação em tabela. 100% no navegador." />
-
-  <!-- Fontes -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
-  <style>
-/* =====================================================================
-   RUMO · Leitor de Ensaios de Dormente — estilos
-   Paleta: azul-escuro (dominante) · branco · verde-claro · amarelo (detalhe)
-   ===================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
-
-:root {
-  --navy:        #0A2A5E;   /* azul-escuro principal */
-  --navy-900:    #07203F;
-  --navy-700:    #123B7A;
-  --navy-500:    #1F56A8;
-  --white:       #FFFFFF;
-  --green:       #8DC63F;   /* verde-claro (secundária) */
-  --green-deep:  #2E9E73;   /* verde para situação OK */
-  --green-soft:  #EAF6DC;
-  --yellow:      #FFD200;   /* amarelo (detalhes) */
-  --blue-light:  #29ABE2;
-  --red:         #D6453C;
-  --red-soft:    #FBE7E5;
-
-  --bg:          #EBEEF4;
-  --surface:     #FFFFFF;
-  --line:        #DCE3EE;
-  --ink:         #0A2A5E;
-  --muted:       #5C6C88;
-
-  --chamfer: 12px;
-  --shadow: 0 18px 40px -24px rgba(10,42,94,.45);
-  --shadow-sm: 0 8px 20px -16px rgba(10,42,94,.5);
-  --font-display: 'Archivo', sans-serif;
-  --font-body: 'IBM Plex Sans', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
-}
-
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  margin: 0;
-  font-family: var(--font-body);
-  color: var(--ink);
-  background:
-    radial-gradient(1200px 600px at 110% -10%, rgba(41,171,226,.10), transparent 60%),
-    radial-gradient(900px 500px at -10% 10%, rgba(141,198,63,.10), transparent 55%),
-    var(--bg);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-}
-
-.chamfer { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, var(--chamfer) 100%, 0 calc(100% - var(--chamfer))); }
-
-/* ---------------- top bar ---------------- */
-.topbar {
-  background: var(--navy);
-  color: var(--white);
-  border-bottom: 4px solid var(--yellow);
-  position: sticky; top: 0; z-index: 50;
-}
-.topbar__in {
-  max-width: 1120px; margin: 0 auto; padding: 14px 24px;
-  display: flex; align-items: center; gap: 22px;
-}
-.brand {
-  display: flex; align-items: center; gap: 12px; color: inherit;
-  text-decoration: none; min-width: 0;
-}
-.brand__logoBox {
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--white); padding: 8px 12px; min-width: 138px; min-height: 45px;
-  box-shadow: 0 10px 24px -18px rgba(0,0,0,.55);
-}
-.brand__logo {
-  display: block; width: 114px; height: auto;
-}
-.brand .tag { font-size: 11px; color: #B9CBE8; letter-spacing: .12em; text-transform: uppercase; }
-.topbar__actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
-.hub-btn {
-  font-family: var(--font-display); font-weight: 800; font-size: 13px;
-  letter-spacing: .12em; text-decoration: none; text-transform: uppercase;
-  color: var(--navy); background: var(--yellow); padding: 10px 18px;
-  display: inline-flex; align-items: center; justify-content: center;
-  box-shadow: 0 12px 26px -20px rgba(0,0,0,.6);
-  transition: .15s ease;
-}
-.hub-btn:hover { background: #FFE15A; transform: translateY(-1px); }
-.hub-btn:focus-visible { outline: 3px solid var(--white); outline-offset: 3px; }
-.topbar__title {
-  font-family: var(--font-display); font-weight: 600;
-  font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: #C7D6EE;
-  display: flex; align-items: center; gap: 9px;
-}
-.topbar__title svg { color: var(--yellow); }
-
-/* ---------------- layout ---------------- */
-main { max-width: 1120px; margin: 0 auto; padding: 34px 24px 60px; }
-.hero { margin-bottom: 26px; }
-.hero h1 {
-  font-family: var(--font-display); font-weight: 800; font-size: clamp(26px, 4vw, 40px);
-  line-height: 1.05; margin: 0 0 10px; letter-spacing: -.02em;
-}
-.hero h1 .hl { color: var(--green-deep); }
-.hero p { margin: 0; color: var(--muted); max-width: 60ch; font-size: 15.5px; }
-
-/* ---------------- dropzone ---------------- */
-.dropzone {
-  background: var(--surface);
-  border: 2px dashed var(--navy-500);
-  padding: 46px 28px; text-align: center;
-  box-shadow: var(--shadow);
-  transition: .2s ease;
-  position: relative; overflow: hidden;
-}
-.dropzone::before {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(41,171,226,.06), transparent 40%);
-  pointer-events: none;
-}
-.dropzone.drag { border-color: var(--green-deep); background: #F5FBF0; transform: translateY(-2px); }
-.dropzone .ic {
-  width: 58px; height: 58px; margin: 0 auto 16px; display: grid; place-items: center;
-  background: var(--navy); color: var(--yellow);
-}
-.dropzone h2 { font-family: var(--font-display); font-weight: 700; font-size: 20px; margin: 0 0 6px; }
-.dropzone p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
-.btn {
-  font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .02em;
-  border: none; cursor: pointer; padding: 12px 22px; color: var(--white);
-  background: var(--navy); display: inline-flex; align-items: center; gap: 9px;
-  transition: .15s ease;
-}
-.btn:hover { background: var(--navy-700); transform: translateY(-1px); }
-.btn:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
-.btn--ghost { background: var(--white); color: var(--navy); box-shadow: inset 0 0 0 2px var(--navy); }
-.btn--ghost:hover { background: #F0F4FA; }
-.btn--green { background: var(--green-deep); }
-.btn--green:hover { background: #268a64; }
-.btn svg { width: 17px; height: 17px; }
-.hint { margin-top: 16px; font-size: 12.5px; color: var(--muted); }
-.hint b { color: var(--navy); }
-
-/* ---------------- tabs ---------------- */
-.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-.tab {
-  font-family: var(--font-mono); font-weight: 600; font-size: 12.5px;
-  background: var(--white); color: var(--navy); border: none; cursor: pointer;
-  padding: 9px 15px; box-shadow: inset 0 0 0 1.5px var(--line);
-  display: inline-flex; align-items: center; gap: 8px; transition: .15s;
-}
-.tab:hover { box-shadow: inset 0 0 0 1.5px var(--navy-500); }
-.tab.active { background: var(--navy); color: var(--white); box-shadow: none; }
-.tab .x { opacity: .55; font-size: 14px; }
-.tab .x:hover { opacity: 1; }
-
-/* ---------------- report ---------------- */
-.report { animation: rise .45s cubic-bezier(.2,.7,.3,1) both; }
-@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-
-.idcard {
-  background: var(--navy); color: var(--white); padding: 22px 24px; margin-bottom: 16px;
-  box-shadow: var(--shadow); position: relative; overflow: hidden;
-}
-.idcard::after {
-  content: ""; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px;
-  background: repeating-linear-gradient(135deg, rgba(255,210,0,.16) 0 10px, transparent 10px 22px);
-  transform: rotate(8deg);
-}
-.idcard h3 {
-  font-family: var(--font-display); font-weight: 800; font-size: 13px; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--yellow); margin: 0 0 16px;
-}
-.idgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px 22px; }
-.idgrid .k { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #9DB6DC; margin-bottom: 3px; }
-.idgrid .v { font-family: var(--font-mono); font-weight: 600; font-size: 15px; word-break: break-word; }
-
-/* conclusion banner */
-.banner {
-  display: flex; align-items: center; gap: 16px; padding: 18px 22px; margin-bottom: 22px;
-  box-shadow: var(--shadow-sm); font-family: var(--font-display);
-}
-.banner--ok { background: var(--green-soft); color: #1d6b4c; box-shadow: var(--shadow-sm), inset 0 0 0 2px #bfe39a; }
-.banner--fail { background: var(--red-soft); color: #9a261d; box-shadow: var(--shadow-sm), inset 0 0 0 2px #f1b3ad; }
-.banner .seal {
-  width: 46px; height: 46px; display: grid; place-items: center; flex: none; color: var(--white);
-}
-.banner--ok .seal { background: var(--green-deep); }
-.banner--fail .seal { background: var(--red); }
-.banner .lbl { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
-.banner .val { font-size: 24px; font-weight: 800; line-height: 1; }
-
-/* toolbar */
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
-.toolbar .btn { padding: 10px 16px; font-size: 13px; }
-
-/* section + table */
-.section { margin-bottom: 26px; }
-.section__head {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
-}
-.section__head h3 {
-  font-family: var(--font-display); font-weight: 800; font-size: 17px; margin: 0;
-}
-.section__head .bar { height: 4px; flex: 1; background: linear-gradient(90deg, var(--yellow), transparent); }
-.section__head .count {
-  font-family: var(--font-mono); font-size: 12px; color: var(--muted);
-  background: var(--white); padding: 3px 9px; box-shadow: inset 0 0 0 1px var(--line);
-}
-
-.tablewrap { background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
-table { width: 100%; border-collapse: collapse; }
-thead th {
-  background: var(--navy); color: var(--white); text-align: left; padding: 12px 16px;
-  font-family: var(--font-display); font-weight: 600; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase;
-}
-thead th.num, td.num { text-align: right; }
-tbody td { padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: middle; }
-tbody tr:last-child td { border-bottom: none; }
-tbody tr:hover { background: #F4F7FC; }
-tbody tr.sub td:first-child { padding-left: 30px; color: var(--muted); font-size: 13px; }
-.ensaio { font-weight: 500; }
-.valor { font-family: var(--font-mono); font-weight: 700; font-size: 15px; color: var(--navy); white-space: nowrap; }
-.criterio { color: var(--muted); font-size: 13px; }
-
-.badge {
-  display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px;
-  font-family: var(--font-display); font-weight: 600; font-size: 12px; white-space: nowrap;
-  clip-path: polygon(0 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px));
-.badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
-.badge--ok { background: var(--green-soft); color: #1d6b4c; }
-.badge--ok::before { background: var(--green-deep); }
-.badge--fail { background: var(--red-soft); color: #9a261d; }
-.badge--fail::before { background: var(--red); }
-.badge--info { background: #E7F1FB; color: var(--navy-700); }
-.badge--info::before { background: var(--blue-light); }
-
-
-
-/* ---------------- navegação principal ---------------- */
-.main-tabs {
-  display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px;
-}
-.main-tab {
-  font-family: var(--font-display); font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-  border: none; cursor: pointer; padding: 11px 18px; color: var(--navy);
-  background: var(--white); box-shadow: inset 0 0 0 1.5px var(--line);
-  transition: .15s ease;
-}
-.main-tab:hover { box-shadow: inset 0 0 0 1.5px var(--navy-500); transform: translateY(-1px); }
-.main-tab.active { color: var(--white); background: var(--navy); box-shadow: none; }
-.main-tab span {
-  display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 22px;
-  margin-left: 8px; padding: 0 7px; border-radius: 999px; background: var(--yellow); color: var(--navy);
-  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0;
-}
-.main-tab.active span { background: var(--yellow); color: var(--navy); }
-
-/* ---------------- decisão pós-importação ---------------- */
-.decision-panel {
-  display: grid; grid-template-columns: minmax(220px, 1fr) auto auto; gap: 12px; align-items: end;
-  background: var(--white); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm);
-  border-left: 5px solid var(--yellow);
-}
-.decision-panel label {
-  display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
-}
-.decision-panel select,
-.history-filters input,
-.history-filters select {
-  width: 100%; min-height: 42px; border: 1.5px solid var(--line); background: var(--white); color: var(--navy);
-  padding: 9px 11px; font-family: var(--font-body); font-size: 14px; outline: none;
-}
-.decision-panel select:focus,
-.history-filters input:focus,
-.history-filters select:focus { border-color: var(--navy-500); box-shadow: 0 0 0 3px rgba(31,86,168,.12); }
-.decision-note { color: var(--muted); font-size: 13px; margin-top: 4px; letter-spacing: 0; text-transform: none; font-weight: 500; }
-.saved-note { color: var(--green-deep); font-family: var(--font-display); font-weight: 800; font-size: 13px; }
-
-/* ---------------- histórico ---------------- */
-.history-panel { animation: rise .35s cubic-bezier(.2,.7,.3,1) both; }
-.history-head {
-  background: linear-gradient(135deg, var(--navy) 0%, #103872 100%); color: var(--white);
-  padding: 28px; margin-bottom: 18px; box-shadow: var(--shadow);
-  position: relative; overflow: hidden;
-}
-.history-head::after {
-  content: ""; position: absolute; right: -34px; top: -34px; width: 170px; height: 170px;
-  background: repeating-linear-gradient(135deg, rgba(255,210,0,.18) 0 10px, transparent 10px 21px);
-  transform: rotate(8deg);
-}
-.history-head > div { position: relative; z-index: 1; max-width: 780px; }
-.history-head .eyebrow {
-  margin: 0 0 8px; color: var(--yellow); font-family: var(--font-display); font-size: 12px; font-weight: 800;
-  letter-spacing: .16em; text-transform: uppercase;
-}
-.history-head h2 { margin: 0 0 8px; font-family: var(--font-display); font-size: clamp(24px, 3vw, 32px); }
-.history-head p { margin: 0; color: #C7D6EE; }
-.history-filters-card {
-  background: var(--white); padding: 18px; margin-bottom: 20px; box-shadow: var(--shadow-sm);
-  border: 1px solid var(--line);
-}
-.history-filters-card__head {
-  display: flex; align-items: end; justify-content: space-between; gap: 14px;
-  padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--line);
-}
-.history-filters-card__head .eyebrow {
-  margin: 0 0 6px; color: var(--navy-500); font-family: var(--font-display); font-size: 11px; font-weight: 800;
-  letter-spacing: .14em; text-transform: uppercase;
-}
-.history-filters-card__head h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 20px; }
-.history-filters-card__head p { margin: 0; color: var(--muted); font-size: 14px; }
-.history-filters {
-  display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)); gap: 12px; align-items: end;
-}
-.history-filters label {
-  display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-}
-.history-results { display: grid; gap: 20px; }
-.history-overview {
-  display: grid; grid-template-columns: minmax(250px, 1.35fr) repeat(4, minmax(150px, 1fr)); gap: 12px;
-}
-.history-stat {
-  background: var(--white); border: 1px solid var(--line); box-shadow: var(--shadow-sm); padding: 16px 18px;
-  position: relative; overflow: hidden;
-}
-.history-stat::before {
-  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--navy);
-}
-.history-stat--main { background: linear-gradient(135deg, rgba(10,42,94,.05), rgba(41,171,226,.08)), var(--white); }
-.history-stat__label {
-  color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px;
-}
-.history-stat__value { font-family: var(--font-display); font-size: 30px; line-height: 1; font-weight: 800; color: var(--navy); }
-.history-stat__sub { margin-top: 8px; color: var(--muted); font-size: 13px; }
-.history-summary {
-  color: var(--muted); margin: 0; font-size: 14px; background: var(--white); padding: 12px 16px; border: 1px solid var(--line); box-shadow: var(--shadow-sm);
-}
-.history-group-card {
-  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(247,250,253,.98));
-  border: 1px solid var(--line); padding: 16px; box-shadow: var(--shadow-sm);
-}
-.history-group { margin: 0; }
-.history-group__head {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
-}
-.history-group__head h3 { margin: 0; font-family: var(--font-display); font-size: 19px; }
-.history-group__head .bar { height: 4px; flex: 1; background: linear-gradient(90deg, var(--yellow), transparent); }
-.history-group__head .count {
-  min-width: 34px; text-align: center; color: var(--navy); background: #FFF6BF; padding: 5px 10px; border-radius: 999px;
-  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
-}
-.history-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
-.history-card {
-  background: var(--white); padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid var(--line);
-  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 14px;
-}
-.history-card::before {
-  content: ""; position: absolute; left: 0; top: 0; right: 0; height: 5px; background: var(--navy);
-}
-.history-card--liberacao::before { background: linear-gradient(90deg, var(--navy), var(--yellow)); }
-.history-card--arrancamento-usp::before { background: linear-gradient(90deg, var(--green-deep), var(--yellow)); }
-.history-card--bitola::before { background: linear-gradient(90deg, #29ABE2, var(--navy)); }
-.history-card--inspecao-pista::before { background: linear-gradient(90deg, #7B61FF, var(--navy)); }
-.history-card__header { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
-.history-badge {
-  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; border-radius: 999px;
-  background: #EDF3FD; color: var(--navy); font-family: var(--font-display); font-size: 11px; font-weight: 800;
-  letter-spacing: .06em; text-transform: uppercase;
-}
-.history-card h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: 18px; line-height: 1.15; }
-.history-card p { margin: 0; color: var(--muted); font-size: 13.5px; word-break: break-word; }
-.history-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-.history-chip {
-  display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: #F3F6FB; padding: 7px 10px;
-  color: var(--navy); font-size: 12px; line-height: 1.1; border: 1px solid #E4EAF4;
-}
-.history-chip span { color: var(--muted); font-weight: 700; }
-.history-card__meta {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; padding: 12px;
-  background: #F8FAFD; border: 1px solid #E3E9F3;
-}
-.history-card__meta .k { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.history-card__meta .v { color: var(--navy); font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; word-break: break-word; }
-.history-card__actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); margin-top: auto; }
-.history-card__actions .btn { padding: 9px 12px; font-size: 12.5px; }
-.btn--danger { background: var(--red); }
-.btn--danger:hover { background: #b9352e; }
-.empty-history {
-  background: var(--white); padding: 28px 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--line);
-  border-left: 5px solid var(--yellow); text-align: center;
-}
-.empty-history h3 { margin: 0 0 6px; font-family: var(--font-display); }
-.empty-history p { margin: 0; color: var(--muted); max-width: 60ch; margin-inline: auto; }
-
-@media (max-width: 1100px) {
-  .history-overview { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
-  .history-filters { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
-}
-
-@media (max-width: 980px) {
-  .history-filters-card__head { flex-direction: column; align-items: stretch; }
-  .history-filters-card__head .btn { width: 100%; justify-content: center; }
-  .history-filters { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
-  .decision-panel { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 640px) {
-  .history-overview { grid-template-columns: 1fr; }
-  .history-filters { grid-template-columns: 1fr; }
-  .history-grid { grid-template-columns: 1fr; }
-  .history-card__meta { grid-template-columns: 1fr; }
-}
-
-/* error / empty */
-.notice {
-  background: var(--white); padding: 22px 24px; box-shadow: var(--shadow-sm);
-  border-left: 5px solid var(--yellow); margin-top: 14px;
-}
-.notice b { color: var(--navy); }
-
-/* footer */
-footer {
-  text-align: center; color: var(--muted); font-size: 12.5px; padding: 26px 24px 40px;
-}
-footer .word { font-family: var(--font-display); font-weight: 800; color: var(--navy); }
-
-/* spinner */
-.spinner {
-  width: 34px; height: 34px; border: 3.5px solid rgba(10,42,94,.18); border-top-color: var(--navy);
-  border-radius: 50%; animation: spin .8s linear infinite; margin: 8px auto;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-@media (max-width: 620px) {
-  .topbar__in { gap: 12px; padding: 12px 16px; }
-  .brand .tag, .topbar__title { display: none; }
-  .topbar__actions { margin-left: auto; }
-  .hub-btn { padding: 9px 14px; }
-  .brand__logoBox { min-width: 118px; min-height: 40px; padding: 7px 10px; }
-  .brand__logo { width: 98px; }
-  .idgrid { grid-template-columns: repeat(2, 1fr); }
-  thead th:nth-child(3), tbody td:nth-child(3) { display: none; } /* esconde critério em telas pequenas */
-}
-
-/* ---------------- impressão ---------------- */
-@media print {
-  body { background: var(--white); }
-  .topbar, .dropzone, .tabs, .toolbar, footer, .hero p, .tab .x { display: none !important; }
-  main { padding: 0; max-width: none; }
-  .idcard, .tablewrap, .banner { box-shadow: none; border: 1px solid #ccc; }
-  .idcard { color: #000; background: #fff; }
-  .idcard h3, .idgrid .k { color: #333; }
-  .idgrid .v { color: #000; }
-  thead th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  .report { animation: none; }
-}
-
-  </style>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-
   <header class="topbar">
     <div class="topbar__in">
       <a class="brand" href="./" aria-label="Rumo">
-        <span class="brand__logoBox chamfer">
-          <img class="brand__logo" src="logo-rumo.svg" alt="Rumo" width="114" height="27" />
-        </span>
-        <span class="tag">Somos o Brasil em movimento</span>
+        <img class="brand__logo" src="logo-rumo.svg" alt="Rumo" width="114" height="27" />
+        <span class="brand__tag">SOMOS O BRASIL<br />EM MOVIMENTO</span>
       </a>
-      <div class="topbar__actions">
-        <a class="hub-btn chamfer" href="https://erwinklein94.github.io/Projeto-Hub-Qualidade/" target="_blank" rel="noopener noreferrer" aria-label="Abrir HUB de Qualidade">HUB</a>
+
+      <div class="topbar__center">
+        <a class="hub-btn" href="https://erwinklein94.github.io/Projeto-Hub-Qualidade/" target="_blank" rel="noopener noreferrer" aria-label="Abrir HUB de Qualidade">HUB</a>
         <div class="topbar__title">
           <span class="ic" id="icTitle" aria-hidden="true"></span>
           <span>Leitor de Ensaios de Dormente</span>
         </div>
       </div>
+
+      <div class="topbar__tools" aria-label="Ações do usuário">
+        <button class="topbar__icon" type="button" aria-label="Notificações">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.4-1.4a2 2 0 0 1-.6-1.4V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+          <span class="dot"></span>
+        </button>
+        <button class="topbar__icon" type="button" aria-label="Ajuda">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.1 9a3 3 0 1 1 5.8 1c0 2-3 2-3 4"/><path d="M12 17h.01"/></svg>
+        </button>
+        <div class="avatar" aria-hidden="true">RK</div>
+      </div>
     </div>
   </header>
 
-  <main>
-    <section class="hero">
-      <h1>Relatórios do <span class="hl">iAuditor</span> em tabela, na hora.</h1>
-      <p>Solte um ou mais PDFs de dormente de concreto e veja os <strong>campos, ensaios, medições e inspeções</strong> com valor, critério e situação. Tudo roda no seu navegador — nenhum arquivo é enviado para servidor.</p>
-    </section>
-
-    <nav class="main-tabs" aria-label="Navegação principal">
-      <button class="main-tab active" type="button" data-main-view="import">Importar relatório</button>
-      <button class="main-tab" type="button" data-main-view="history">Histórico <span id="historyCount">0</span></button>
-    </nav>
-
-    <section id="importPanel">
-      <section class="dropzone chamfer" id="dropzone">
-        <span class="ic" id="icUpload" aria-hidden="true"></span>
-        <h2>Arraste os PDFs aqui</h2>
-        <p>ou selecione os relatórios exportados do iAuditor</p>
-        <button class="btn" type="button" id="pickBtn">Selecionar PDFs</button>
-        <p class="hint">Você pode soltar vários relatórios de uma vez.</p>
-        <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden />
-      </section>
-
-      <section id="reports" hidden>
-        <nav class="tabs" id="tabs" aria-label="Relatórios carregados"></nav>
-        <div id="reportView"></div>
-      </section>
-    </section>
-
-    <section class="history-panel" id="historyPanel" hidden>
-      <div class="history-head chamfer">
-        <div>
-          <p class="eyebrow">Histórico local</p>
-          <h2>Resultados salvos por tipo de ensaio ou inspeção</h2>
-          <p>Depois de importar um PDF, salve o resultado aqui ou descarte as informações. O histórico fica somente neste navegador.</p>
-        </div>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar__section">
+        <p class="sidebar__label">Navegação</p>
+        <button class="sidebar-link is-static" type="button">
+          <span class="sidebar-link__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+          </span>
+          <span>Dashboard</span>
+        </button>
+        <button class="sidebar-link active" type="button" data-main-view="import">
+          <span class="sidebar-link__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>
+          </span>
+          <span>Importar relatório</span>
+        </button>
+        <button class="sidebar-link" type="button" data-main-view="history">
+          <span class="sidebar-link__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v6l4 2"/></svg>
+          </span>
+          <span>Histórico</span>
+          <span class="sidebar-link__count" id="historyCount">0</span>
+        </button>
+        <button class="sidebar-link is-static" type="button">
+          <span class="sidebar-link__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h18M6 3h12l2 4H4l2-4z"/><path d="M5 7v11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7"/></svg>
+          </span>
+          <span>Biblioteca</span>
+        </button>
+        <button class="sidebar-link is-static" type="button">
+          <span class="sidebar-link__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="15" r="3"/><path d="M11.5 10.5 14.5 13.5"/><path d="M3 18c1.5-2.8 4-4 6-4"/></svg>
+          </span>
+          <span>Compartilhados</span>
+        </button>
       </div>
 
-      <section class="history-filters-card chamfer" aria-label="Filtros do histórico">
-        <div class="history-filters-card__head">
-          <div>
-            <p class="eyebrow">Busca e organização</p>
-            <h3>Filtros do histórico</h3>
-            <p>Use os filtros abaixo para localizar rapidamente os resultados salvos por data, lote, tipo, projeto ou empresa.</p>
+      <div class="sidebar__section">
+        <p class="sidebar__label">Status</p>
+        <div class="sidebar-meta"><span>Novos</span><b class="badge-soft badge-soft--green">3</b></div>
+        <div class="sidebar-meta"><span>Atualizações</span><b class="badge-soft badge-soft--blue">2</b></div>
+        <div class="sidebar-meta"><span>Revisão da equipe</span><b class="badge-soft">—</b></div>
+      </div>
+
+      <div class="sidebar__section sidebar__section--grow">
+        <div class="security-card">
+          <div class="security-card__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 5 6v6c0 5 3.5 8 7 9 3.5-1 7-4 7-9V6l-7-3z"/><path d="m9 12 2 2 4-4"/></svg>
           </div>
-          <button class="btn btn--ghost" type="button" id="clearHistoryFilters">Limpar filtros</button>
+          <div>
+            <strong>Segurança e confiança</strong>
+            <p>Seus dados continuam protegidos com processamento local no navegador.</p>
+          </div>
         </div>
+      </div>
+    </aside>
 
-        <div class="history-filters">
-          <label>Data inicial
-            <input type="date" id="filterDateFrom" />
-          </label>
-          <label>Data final
-            <input type="date" id="filterDateTo" />
-          </label>
-          <label>Lote
-            <input type="search" id="filterLote" placeholder="Ex.: 12345" />
-          </label>
-          <label>Tipo de ensaio / inspeção
-            <select id="filterTipo">
-              <option value="">Todos</option>
-            </select>
-          </label>
-          <label>Projeto
-            <input type="search" id="filterProjeto" placeholder="Projeto" />
-          </label>
-          <label>Empresa
-            <select id="filterEmpresa">
-              <option value="">Todas</option>
-              <option value="Cavan">Cavan</option>
-              <option value="Conprem">Conprem</option>
-            </select>
-          </label>
-        </div>
-      </section>
+    <div class="workspace">
+      <main class="workspace__main">
+        <section id="importPanel">
+          <section class="page-hero page-card">
+            <div class="page-hero__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>
+            </div>
+            <div>
+              <p class="eyebrow">Leitor iAuditor</p>
+              <h1>Importe, organize e analise relatórios em segundos</h1>
+              <p>Converta relatórios do iAuditor em uma interface mais moderna, com histórico local, filtros inteligentes e exportação rápida para CSV.</p>
+            </div>
+          </section>
 
-      <div id="historyView" class="history-results"></div>
-    </section>
-  </main>
+          <section class="kpi-grid">
+            <article class="kpi-card page-card">
+              <div class="kpi-card__icon kpi-card__icon--blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+              </div>
+              <div>
+                <div class="kpi-card__value">100%</div>
+                <div class="kpi-card__label">Processamento local</div>
+              </div>
+            </article>
+            <article class="kpi-card page-card">
+              <div class="kpi-card__icon kpi-card__icon--green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6"/><path d="M12 16v6"/><path d="M4.93 4.93l4.24 4.24"/><path d="M14.83 14.83l4.24 4.24"/><path d="M2 12h6"/><path d="M16 12h6"/><path d="M4.93 19.07l4.24-4.24"/><path d="M14.83 9.17l4.24-4.24"/></svg>
+              </div>
+              <div>
+                <div class="kpi-card__value">4</div>
+                <div class="kpi-card__label">Tipos de ensaio / inspeção</div>
+              </div>
+            </article>
+            <article class="kpi-card page-card">
+              <div class="kpi-card__icon kpi-card__icon--yellow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18"/><path d="M12 3v18"/></svg>
+              </div>
+              <div>
+                <div class="kpi-card__value">CSV</div>
+                <div class="kpi-card__label">Exportação rápida</div>
+              </div>
+            </article>
+            <article class="kpi-card page-card">
+              <div class="kpi-card__icon kpi-card__icon--purple">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+              </div>
+              <div>
+                <div class="kpi-card__value">Histórico</div>
+                <div class="kpi-card__label">Salvamento inteligente</div>
+              </div>
+            </article>
+          </section>
 
-  <footer class="foot">
-    <span>RUMO · Leitor de Relatórios iAuditor — processamento 100% local no navegador.</span>
-  </footer>
+          <section class="upload-panel page-card">
+            <section class="dropzone" id="dropzone">
+              <span class="ic" id="icUpload" aria-hidden="true"></span>
+              <h2>Arraste os PDFs aqui</h2>
+              <p>ou selecione os relatórios exportados do iAuditor</p>
+              <button class="btn" type="button" id="pickBtn">Selecionar PDFs</button>
+              <p class="hint">Você pode soltar vários relatórios de uma vez.</p>
+              <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden />
+            </section>
+          </section>
 
-  <!-- PDF.js (renderização/extração no navegador) -->
+          <section id="reports" hidden class="reports-panel page-card">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Resultados importados</p>
+                <h2>Relatórios carregados</h2>
+              </div>
+            </div>
+            <nav class="tabs" id="tabs" aria-label="Relatórios carregados"></nav>
+            <div id="reportView"></div>
+          </section>
+        </section>
+
+        <section class="history-panel" id="historyPanel" hidden>
+          <div class="history-head page-card">
+            <div class="page-hero__icon page-hero__icon--history">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v6l4 2"/></svg>
+            </div>
+            <div>
+              <p class="eyebrow">Histórico de relatórios</p>
+              <h2>Consulte, filtre e reutilize resultados salvos</h2>
+              <p>Depois de importar um PDF, salve o resultado aqui ou descarte as informações. O histórico fica somente neste navegador.</p>
+            </div>
+          </div>
+
+          <section class="history-filters-card page-card" aria-label="Filtros do histórico">
+            <div class="history-filters-card__head">
+              <div>
+                <p class="eyebrow">Filtros</p>
+                <h3>Busca avançada</h3>
+                <p>Encontre resultados por data, lote, projeto, empresa ou tipo de ensaio / inspeção.</p>
+              </div>
+              <button class="btn btn--ghost" type="button" id="clearHistoryFilters">Limpar filtros</button>
+            </div>
+
+            <div class="history-filters">
+              <label>Data inicial
+                <input type="date" id="filterDateFrom" />
+              </label>
+              <label>Data final
+                <input type="date" id="filterDateTo" />
+              </label>
+              <label>Lote
+                <input type="search" id="filterLote" placeholder="Ex.: 12345" />
+              </label>
+              <label>Tipo de ensaio / inspeção
+                <select id="filterTipo">
+                  <option value="">Todos</option>
+                </select>
+              </label>
+              <label>Projeto
+                <input type="search" id="filterProjeto" placeholder="Projeto" />
+              </label>
+              <label>Empresa
+                <select id="filterEmpresa">
+                  <option value="">Todas</option>
+                  <option value="Cavan">Cavan</option>
+                  <option value="Conprem">Conprem</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <div id="historyView" class="history-results"></div>
+        </section>
+      </main>
+
+      <footer class="foot">
+        <span>RUMO · Leitor de Relatórios iAuditor — processamento 100% local no navegador.</span>
+      </footer>
+    </div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <!-- Parser + aplicação -->
   <script src="parser.js"></script>
   <script src="app.js"></script>
 </body>

@@ -237,7 +237,6 @@ tbody tr.sub td:first-child { padding-left: 30px; color: var(--muted); font-size
   display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px;
   font-family: var(--font-display); font-weight: 600; font-size: 12px; white-space: nowrap;
   clip-path: polygon(0 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px));
-}
 .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
 .badge--ok { background: var(--green-soft); color: #1d6b4c; }
 .badge--ok::before { background: var(--green-deep); }
@@ -245,6 +244,105 @@ tbody tr.sub td:first-child { padding-left: 30px; color: var(--muted); font-size
 .badge--fail::before { background: var(--red); }
 .badge--info { background: #E7F1FB; color: var(--navy-700); }
 .badge--info::before { background: var(--blue-light); }
+
+
+
+/* ---------------- navegação principal ---------------- */
+.main-tabs {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px;
+}
+.main-tab {
+  font-family: var(--font-display); font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  border: none; cursor: pointer; padding: 11px 18px; color: var(--navy);
+  background: var(--white); box-shadow: inset 0 0 0 1.5px var(--line);
+  transition: .15s ease;
+}
+.main-tab:hover { box-shadow: inset 0 0 0 1.5px var(--navy-500); transform: translateY(-1px); }
+.main-tab.active { color: var(--white); background: var(--navy); box-shadow: none; }
+.main-tab span {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 22px;
+  margin-left: 8px; padding: 0 7px; border-radius: 999px; background: var(--yellow); color: var(--navy);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0;
+}
+.main-tab.active span { background: var(--yellow); color: var(--navy); }
+
+/* ---------------- decisão pós-importação ---------------- */
+.decision-panel {
+  display: grid; grid-template-columns: minmax(220px, 1fr) auto auto; gap: 12px; align-items: end;
+  background: var(--white); padding: 16px; margin-bottom: 16px; box-shadow: var(--shadow-sm);
+  border-left: 5px solid var(--yellow);
+}
+.decision-panel label {
+  display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+}
+.decision-panel select,
+.history-filters input,
+.history-filters select {
+  width: 100%; min-height: 42px; border: 1.5px solid var(--line); background: var(--white); color: var(--navy);
+  padding: 9px 11px; font-family: var(--font-body); font-size: 14px; outline: none;
+}
+.decision-panel select:focus,
+.history-filters input:focus,
+.history-filters select:focus { border-color: var(--navy-500); box-shadow: 0 0 0 3px rgba(31,86,168,.12); }
+.decision-note { color: var(--muted); font-size: 13px; margin-top: 4px; letter-spacing: 0; text-transform: none; font-weight: 500; }
+.saved-note { color: var(--green-deep); font-family: var(--font-display); font-weight: 800; font-size: 13px; }
+
+/* ---------------- histórico ---------------- */
+.history-panel { animation: rise .35s cubic-bezier(.2,.7,.3,1) both; }
+.history-head {
+  background: var(--navy); color: var(--white); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+}
+.history-head::after {
+  content: ""; position: absolute; right: -34px; top: -34px; width: 170px; height: 170px;
+  background: repeating-linear-gradient(135deg, rgba(255,210,0,.18) 0 10px, transparent 10px 21px);
+  transform: rotate(8deg);
+}
+.history-head > div { position: relative; z-index: 1; max-width: 780px; }
+.history-head .eyebrow {
+  margin: 0 0 8px; color: var(--yellow); font-family: var(--font-display); font-size: 12px; font-weight: 800;
+  letter-spacing: .16em; text-transform: uppercase;
+}
+.history-head h2 { margin: 0 0 8px; font-family: var(--font-display); font-size: clamp(22px, 3vw, 31px); }
+.history-head p { margin: 0; color: #C7D6EE; }
+.history-filters {
+  display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)) auto; gap: 10px; align-items: end;
+  background: var(--white); padding: 16px; margin-bottom: 18px; box-shadow: var(--shadow-sm);
+}
+.history-filters label {
+  display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+}
+.history-summary { color: var(--muted); margin: 0 0 14px; font-size: 14px; }
+.history-group { margin-bottom: 24px; }
+.history-group__head {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.history-group__head h3 { margin: 0; font-family: var(--font-display); font-size: 18px; }
+.history-group__head .bar { height: 4px; flex: 1; background: linear-gradient(90deg, var(--yellow), transparent); }
+.history-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.history-card {
+  background: var(--white); padding: 16px; box-shadow: var(--shadow-sm); border-top: 4px solid var(--navy);
+}
+.history-card h4 { margin: 0 0 8px; font-family: var(--font-display); font-size: 17px; }
+.history-card p { margin: 0 0 12px; color: var(--muted); font-size: 13.5px; }
+.history-card__meta {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin-bottom: 14px;
+}
+.history-card__meta .k { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.history-card__meta .v { color: var(--navy); font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; word-break: break-word; }
+.history-card__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.history-card__actions .btn { padding: 9px 12px; font-size: 12.5px; }
+.btn--danger { background: var(--red); }
+.btn--danger:hover { background: #b9352e; }
+.empty-history { background: var(--white); padding: 22px 24px; box-shadow: var(--shadow-sm); border-left: 5px solid var(--yellow); }
+.empty-history h3 { margin: 0 0 6px; font-family: var(--font-display); }
+.empty-history p { margin: 0; color: var(--muted); }
+
+@media (max-width: 980px) {
+  .history-filters { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
+  .history-filters .btn { grid-column: 1 / -1; justify-content: center; }
+  .decision-panel { grid-template-columns: 1fr; }
+}
 
 /* error / empty */
 .notice {
@@ -318,18 +416,65 @@ footer .word { font-family: var(--font-display); font-weight: 800; color: var(--
       <p>Solte um ou mais PDFs de dormente de concreto e veja os <strong>campos, ensaios, medições e inspeções</strong> com valor, critério e situação. Tudo roda no seu navegador — nenhum arquivo é enviado para servidor.</p>
     </section>
 
-    <section class="dropzone chamfer" id="dropzone">
-      <span class="ic" id="icUpload" aria-hidden="true"></span>
-      <h2>Arraste os PDFs aqui</h2>
-      <p>ou selecione os relatórios exportados do iAuditor</p>
-      <button class="btn" type="button" id="pickBtn">Selecionar PDFs</button>
-      <p class="hint">Você pode soltar vários relatórios de uma vez.</p>
-      <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden />
+    <nav class="main-tabs" aria-label="Navegação principal">
+      <button class="main-tab active" type="button" data-main-view="import">Importar relatório</button>
+      <button class="main-tab" type="button" data-main-view="history">Histórico <span id="historyCount">0</span></button>
+    </nav>
+
+    <section id="importPanel">
+      <section class="dropzone chamfer" id="dropzone">
+        <span class="ic" id="icUpload" aria-hidden="true"></span>
+        <h2>Arraste os PDFs aqui</h2>
+        <p>ou selecione os relatórios exportados do iAuditor</p>
+        <button class="btn" type="button" id="pickBtn">Selecionar PDFs</button>
+        <p class="hint">Você pode soltar vários relatórios de uma vez.</p>
+        <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden />
+      </section>
+
+      <section id="reports" hidden>
+        <nav class="tabs" id="tabs" aria-label="Relatórios carregados"></nav>
+        <div id="reportView"></div>
+      </section>
     </section>
 
-    <section id="reports" hidden>
-      <nav class="tabs" id="tabs" aria-label="Relatórios carregados"></nav>
-      <div id="reportView"></div>
+    <section class="history-panel" id="historyPanel" hidden>
+      <div class="history-head chamfer">
+        <div>
+          <p class="eyebrow">Histórico local</p>
+          <h2>Resultados salvos por tipo de ensaio ou inspeção</h2>
+          <p>Depois de importar um PDF, salve o resultado aqui ou descarte as informações. O histórico fica somente neste navegador.</p>
+        </div>
+      </div>
+
+      <div class="history-filters chamfer" aria-label="Filtros do histórico">
+        <label>Data inicial
+          <input type="date" id="filterDateFrom" />
+        </label>
+        <label>Data final
+          <input type="date" id="filterDateTo" />
+        </label>
+        <label>Lote
+          <input type="search" id="filterLote" placeholder="Ex.: 12345" />
+        </label>
+        <label>Tipo
+          <select id="filterTipo">
+            <option value="">Todos</option>
+          </select>
+        </label>
+        <label>Projeto
+          <input type="search" id="filterProjeto" placeholder="Projeto" />
+        </label>
+        <label>Empresa
+          <select id="filterEmpresa">
+            <option value="">Todas</option>
+            <option value="Cavan">Cavan</option>
+            <option value="Conprem">Conprem</option>
+          </select>
+        </label>
+        <button class="btn btn--ghost" type="button" id="clearHistoryFilters">Limpar filtros</button>
+      </div>
+
+      <div id="historyView"></div>
     </section>
   </main>
 

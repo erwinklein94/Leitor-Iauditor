@@ -32,6 +32,19 @@
     <aside class="sidebar">
       <div class="sidebar__section">
         <p class="sidebar__label">Navegação</p>
+        <button class="sidebar-link active" type="button" data-main-view="import">
+          <span class="sidebar-link__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>
+          </span>
+          <span>Importar relatório</span>
+        </button>
+        <button class="sidebar-link" type="button" data-main-view="history">
+          <span class="sidebar-link__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v6l4 2"/></svg>
+          </span>
+          <span>Histórico</span>
+          <span class="sidebar-link__count" id="historyCount">0</span>
+        </button>
       </div>
 
       <div class="sidebar__section sidebar__section--grow">

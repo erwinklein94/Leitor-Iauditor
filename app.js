@@ -427,8 +427,25 @@
     const groups = HISTORY_TYPES.map((t) => ({ type: t, items: results.filter((item) => item.tipo === t.value) }))
       .filter((g) => g.items.length);
 
-    historyView.innerHTML = '<p class="history-summary">' + results.length + ' resultado(s) encontrado(s) no histórico.</p>' +
-      groups.map((g) => '<section class="history-group">' +
+    const overview = '<div class="history-overview">' +
+      '<article class="history-stat history-stat--main chamfer">' +
+        '<div class="history-stat__label">Resumo do histórico</div>' +
+        '<div class="history-stat__value">' + results.length + '</div>' +
+        '<div class="history-stat__sub">resultado(s) exibido(s) de um total de ' + historyItems.length + ' salvo(s).</div>' +
+      '</article>' +
+      HISTORY_TYPES.map((t) => {
+        const count = results.filter((item) => item.tipo === t.value).length;
+        return '<article class="history-stat chamfer">' +
+          '<div class="history-stat__label">' + esc(t.label) + '</div>' +
+          '<div class="history-stat__value">' + count + '</div>' +
+          '<div class="history-stat__sub">registro(s) nesta categoria</div>' +
+        '</article>';
+      }).join('') +
+      '</div>';
+
+    historyView.innerHTML = overview +
+      '<p class="history-summary">Exibindo <b>' + results.length + '</b> resultado(s) encontrado(s) no histórico com os filtros atuais.</p>' +
+      groups.map((g) => '<section class="history-group history-group-card chamfer">' +
         '<div class="history-group__head"><h3>' + esc(g.type.label) + '</h3><div class="bar"></div><span class="count">' + g.items.length + '</span></div>' +
         '<div class="history-grid">' + g.items.map(historyCard).join('') + '</div>' +
         '</section>').join('');
@@ -442,11 +459,22 @@
     const title = item.lote ? 'Lote ' + item.lote : (item.fileName || 'Resultado sem lote');
     const dateText = formatDateBR(item.dataISO, item.dataLabel);
     const savedText = formatDateBR((item.savedAt || '').slice(0, 10), '—');
-    return '<article class="history-card chamfer">' +
-      '<h4>' + esc(title) + '</h4>' +
-      '<p>' + esc(item.fileName || 'Relatório salvo') + '</p>' +
+    const typeLabel = TYPE_LABEL[item.tipo] || 'Resultado salvo';
+    return '<article class="history-card history-card--' + esc(item.tipo || 'outro') + ' chamfer">' +
+      '<div class="history-card__header">' +
+        '<div>' +
+          '<span class="history-badge">' + esc(typeLabel) + '</span>' +
+          '<h4>' + esc(title) + '</h4>' +
+          '<p>' + esc(item.fileName || 'Relatório salvo') + '</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="history-chip-row">' +
+        historyChip('Data', dateText) +
+        historyChip('Empresa', item.empresa || '—') +
+        historyChip('Projeto', item.projeto || '—') +
+      '</div>' +
       '<div class="history-card__meta">' +
-        historyMeta('Data', dateText) +
+        historyMeta('Data do ensaio', dateText) +
         historyMeta('Projeto', item.projeto || '—') +
         historyMeta('Empresa', item.empresa || '—') +
         historyMeta('Fornecedor', item.fornecedor || '—') +
@@ -454,8 +482,8 @@
         historyMeta('Salvo em', savedText) +
       '</div>' +
       '<div class="history-card__actions">' +
-        '<button class="btn" type="button" data-history-open="' + esc(item.id) + '">' + ICONS.eye + 'Ver</button>' +
-        '<button class="btn btn--green" type="button" data-history-csv="' + esc(item.id) + '">' + ICONS.download + 'CSV</button>' +
+        '<button class="btn" type="button" data-history-open="' + esc(item.id) + '">' + ICONS.eye + 'Ver resultado</button>' +
+        '<button class="btn btn--green" type="button" data-history-csv="' + esc(item.id) + '">' + ICONS.download + 'Baixar CSV</button>' +
         '<button class="btn btn--danger" type="button" data-history-delete="' + esc(item.id) + '">' + ICONS.trash + 'Excluir</button>' +
       '</div>' +
       '</article>';
@@ -463,6 +491,10 @@
 
   function historyMeta(k, v) {
     return '<div><div class="k">' + esc(k) + '</div><div class="v">' + esc(v) + '</div></div>';
+  }
+
+  function historyChip(k, v) {
+    return "<span class=\"history-chip\"><span>" + esc(k) + "</span>" + esc(v) + "</span>";
   }
 
   function openHistoryItem(id) {

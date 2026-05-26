@@ -290,7 +290,8 @@ tbody tr.sub td:first-child { padding-left: 30px; color: var(--muted); font-size
 /* ---------------- histórico ---------------- */
 .history-panel { animation: rise .35s cubic-bezier(.2,.7,.3,1) both; }
 .history-head {
-  background: var(--navy); color: var(--white); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow);
+  background: linear-gradient(135deg, var(--navy) 0%, #103872 100%); color: var(--white);
+  padding: 28px; margin-bottom: 18px; box-shadow: var(--shadow);
   position: relative; overflow: hidden;
 }
 .history-head::after {
@@ -303,45 +304,122 @@ tbody tr.sub td:first-child { padding-left: 30px; color: var(--muted); font-size
   margin: 0 0 8px; color: var(--yellow); font-family: var(--font-display); font-size: 12px; font-weight: 800;
   letter-spacing: .16em; text-transform: uppercase;
 }
-.history-head h2 { margin: 0 0 8px; font-family: var(--font-display); font-size: clamp(22px, 3vw, 31px); }
+.history-head h2 { margin: 0 0 8px; font-family: var(--font-display); font-size: clamp(24px, 3vw, 32px); }
 .history-head p { margin: 0; color: #C7D6EE; }
+.history-filters-card {
+  background: var(--white); padding: 18px; margin-bottom: 20px; box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+}
+.history-filters-card__head {
+  display: flex; align-items: end; justify-content: space-between; gap: 14px;
+  padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--line);
+}
+.history-filters-card__head .eyebrow {
+  margin: 0 0 6px; color: var(--navy-500); font-family: var(--font-display); font-size: 11px; font-weight: 800;
+  letter-spacing: .14em; text-transform: uppercase;
+}
+.history-filters-card__head h3 { margin: 0 0 6px; font-family: var(--font-display); font-size: 20px; }
+.history-filters-card__head p { margin: 0; color: var(--muted); font-size: 14px; }
 .history-filters {
-  display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)) auto; gap: 10px; align-items: end;
-  background: var(--white); padding: 16px; margin-bottom: 18px; box-shadow: var(--shadow-sm);
+  display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)); gap: 12px; align-items: end;
 }
 .history-filters label {
   display: grid; gap: 6px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
 }
-.history-summary { color: var(--muted); margin: 0 0 14px; font-size: 14px; }
-.history-group { margin-bottom: 24px; }
+.history-results { display: grid; gap: 20px; }
+.history-overview {
+  display: grid; grid-template-columns: minmax(250px, 1.35fr) repeat(4, minmax(150px, 1fr)); gap: 12px;
+}
+.history-stat {
+  background: var(--white); border: 1px solid var(--line); box-shadow: var(--shadow-sm); padding: 16px 18px;
+  position: relative; overflow: hidden;
+}
+.history-stat::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--navy);
+}
+.history-stat--main { background: linear-gradient(135deg, rgba(10,42,94,.05), rgba(41,171,226,.08)), var(--white); }
+.history-stat__label {
+  color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px;
+}
+.history-stat__value { font-family: var(--font-display); font-size: 30px; line-height: 1; font-weight: 800; color: var(--navy); }
+.history-stat__sub { margin-top: 8px; color: var(--muted); font-size: 13px; }
+.history-summary {
+  color: var(--muted); margin: 0; font-size: 14px; background: var(--white); padding: 12px 16px; border: 1px solid var(--line); box-shadow: var(--shadow-sm);
+}
+.history-group-card {
+  background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(247,250,253,.98));
+  border: 1px solid var(--line); padding: 16px; box-shadow: var(--shadow-sm);
+}
+.history-group { margin: 0; }
 .history-group__head {
-  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
 }
-.history-group__head h3 { margin: 0; font-family: var(--font-display); font-size: 18px; }
+.history-group__head h3 { margin: 0; font-family: var(--font-display); font-size: 19px; }
 .history-group__head .bar { height: 4px; flex: 1; background: linear-gradient(90deg, var(--yellow), transparent); }
-.history-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-.history-card {
-  background: var(--white); padding: 16px; box-shadow: var(--shadow-sm); border-top: 4px solid var(--navy);
+.history-group__head .count {
+  min-width: 34px; text-align: center; color: var(--navy); background: #FFF6BF; padding: 5px 10px; border-radius: 999px;
+  font-family: var(--font-mono); font-size: 12px; font-weight: 700;
 }
-.history-card h4 { margin: 0 0 8px; font-family: var(--font-display); font-size: 17px; }
-.history-card p { margin: 0 0 12px; color: var(--muted); font-size: 13.5px; }
+.history-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 14px; }
+.history-card {
+  background: var(--white); padding: 18px; box-shadow: var(--shadow-sm); border: 1px solid var(--line);
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 14px;
+}
+.history-card::before {
+  content: ""; position: absolute; left: 0; top: 0; right: 0; height: 5px; background: var(--navy);
+}
+.history-card--liberacao::before { background: linear-gradient(90deg, var(--navy), var(--yellow)); }
+.history-card--arrancamento-usp::before { background: linear-gradient(90deg, var(--green-deep), var(--yellow)); }
+.history-card--bitola::before { background: linear-gradient(90deg, #29ABE2, var(--navy)); }
+.history-card--inspecao-pista::before { background: linear-gradient(90deg, #7B61FF, var(--navy)); }
+.history-card__header { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+.history-badge {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 10px; padding: 6px 10px; border-radius: 999px;
+  background: #EDF3FD; color: var(--navy); font-family: var(--font-display); font-size: 11px; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.history-card h4 { margin: 0 0 6px; font-family: var(--font-display); font-size: 18px; line-height: 1.15; }
+.history-card p { margin: 0; color: var(--muted); font-size: 13.5px; word-break: break-word; }
+.history-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.history-chip {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; background: #F3F6FB; padding: 7px 10px;
+  color: var(--navy); font-size: 12px; line-height: 1.1; border: 1px solid #E4EAF4;
+}
+.history-chip span { color: var(--muted); font-weight: 700; }
 .history-card__meta {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin-bottom: 14px;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; padding: 12px;
+  background: #F8FAFD; border: 1px solid #E3E9F3;
 }
 .history-card__meta .k { color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .history-card__meta .v { color: var(--navy); font-family: var(--font-mono); font-size: 12.5px; font-weight: 700; word-break: break-word; }
-.history-card__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.history-card__actions { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); margin-top: auto; }
 .history-card__actions .btn { padding: 9px 12px; font-size: 12.5px; }
 .btn--danger { background: var(--red); }
 .btn--danger:hover { background: #b9352e; }
-.empty-history { background: var(--white); padding: 22px 24px; box-shadow: var(--shadow-sm); border-left: 5px solid var(--yellow); }
+.empty-history {
+  background: var(--white); padding: 28px 24px; box-shadow: var(--shadow-sm); border: 1px solid var(--line);
+  border-left: 5px solid var(--yellow); text-align: center;
+}
 .empty-history h3 { margin: 0 0 6px; font-family: var(--font-display); }
-.empty-history p { margin: 0; color: var(--muted); }
+.empty-history p { margin: 0; color: var(--muted); max-width: 60ch; margin-inline: auto; }
+
+@media (max-width: 1100px) {
+  .history-overview { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+  .history-filters { grid-template-columns: repeat(3, minmax(150px, 1fr)); }
+}
 
 @media (max-width: 980px) {
+  .history-filters-card__head { flex-direction: column; align-items: stretch; }
+  .history-filters-card__head .btn { width: 100%; justify-content: center; }
   .history-filters { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
-  .history-filters .btn { grid-column: 1 / -1; justify-content: center; }
   .decision-panel { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .history-overview { grid-template-columns: 1fr; }
+  .history-filters { grid-template-columns: 1fr; }
+  .history-grid { grid-template-columns: 1fr; }
+  .history-card__meta { grid-template-columns: 1fr; }
 }
 
 /* error / empty */
@@ -446,35 +524,45 @@ footer .word { font-family: var(--font-display); font-weight: 800; color: var(--
         </div>
       </div>
 
-      <div class="history-filters chamfer" aria-label="Filtros do histórico">
-        <label>Data inicial
-          <input type="date" id="filterDateFrom" />
-        </label>
-        <label>Data final
-          <input type="date" id="filterDateTo" />
-        </label>
-        <label>Lote
-          <input type="search" id="filterLote" placeholder="Ex.: 12345" />
-        </label>
-        <label>Tipo
-          <select id="filterTipo">
-            <option value="">Todos</option>
-          </select>
-        </label>
-        <label>Projeto
-          <input type="search" id="filterProjeto" placeholder="Projeto" />
-        </label>
-        <label>Empresa
-          <select id="filterEmpresa">
-            <option value="">Todas</option>
-            <option value="Cavan">Cavan</option>
-            <option value="Conprem">Conprem</option>
-          </select>
-        </label>
-        <button class="btn btn--ghost" type="button" id="clearHistoryFilters">Limpar filtros</button>
-      </div>
+      <section class="history-filters-card chamfer" aria-label="Filtros do histórico">
+        <div class="history-filters-card__head">
+          <div>
+            <p class="eyebrow">Busca e organização</p>
+            <h3>Filtros do histórico</h3>
+            <p>Use os filtros abaixo para localizar rapidamente os resultados salvos por data, lote, tipo, projeto ou empresa.</p>
+          </div>
+          <button class="btn btn--ghost" type="button" id="clearHistoryFilters">Limpar filtros</button>
+        </div>
 
-      <div id="historyView"></div>
+        <div class="history-filters">
+          <label>Data inicial
+            <input type="date" id="filterDateFrom" />
+          </label>
+          <label>Data final
+            <input type="date" id="filterDateTo" />
+          </label>
+          <label>Lote
+            <input type="search" id="filterLote" placeholder="Ex.: 12345" />
+          </label>
+          <label>Tipo de ensaio / inspeção
+            <select id="filterTipo">
+              <option value="">Todos</option>
+            </select>
+          </label>
+          <label>Projeto
+            <input type="search" id="filterProjeto" placeholder="Projeto" />
+          </label>
+          <label>Empresa
+            <select id="filterEmpresa">
+              <option value="">Todas</option>
+              <option value="Cavan">Cavan</option>
+              <option value="Conprem">Conprem</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <div id="historyView" class="history-results"></div>
     </section>
   </main>
 

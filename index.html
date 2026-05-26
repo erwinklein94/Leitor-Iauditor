@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RUMO · Leitor de Ensaios de Dormente</title>
+  <meta name="description" content="Leitor de relatórios de ensaio de dormente (iAuditor) — apresenta ensaio e carga/medida aplicada em tabela. 100% no navegador." />
+
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__in">
+      <a class="brand" href="./" aria-label="Rumo">
+        <span class="word">rum<span class="dot">o</span></span>
+        <span class="tag">Somos o Brasil em movimento</span>
+      </a>
+      <div class="topbar__title">
+        <span class="ic" id="icTitle" aria-hidden="true"></span>
+        <span>Leitor de Ensaios de Dormente</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Relatórios do <span class="hl">iAuditor</span> em tabela, na hora.</h1>
+      <p>Solte um ou mais PDFs de ensaio de dormente de concreto e veja cada <strong>ensaio</strong> com a <strong>carga ou medida aplicada</strong>, o critério e a situação. Tudo roda no seu navegador — nenhum arquivo é enviado para servidor.</p>
+    </section>
+
+    <section class="dropzone chamfer" id="dropzone">
+      <span class="ic" id="icUpload" aria-hidden="true"></span>
+      <h2>Arraste os PDFs aqui</h2>
+      <p>ou selecione os relatórios exportados do iAuditor</p>
+      <button class="btn" type="button" id="pickBtn">Selecionar PDFs</button>
+      <p class="hint">Você pode soltar vários relatórios de uma vez.</p>
+      <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden />
+    </section>
+
+    <section id="reports" hidden>
+      <nav class="tabs" id="tabs" aria-label="Relatórios carregados"></nav>
+      <div id="reportView"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>RUMO · Leitor de Ensaios — processamento 100% local no navegador.</span>
+  </footer>
+
+  <!-- PDF.js (renderização/extração no navegador) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Parser + aplicação -->
+  <script src="assets/js/parser.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

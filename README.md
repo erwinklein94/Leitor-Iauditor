@@ -1,56 +1,59 @@
-# RUMO · Leitor de Ensaios de Dormente
+# RUMO · Leitor de Relatórios iAuditor
 
-Site estático que lê relatórios PDF de **ensaio de dormente de concreto** exportados do **iAuditor** e os apresenta em **tabela**, com o ensaio e a respectiva **carga ou medida aplicada**, o critério/limite e a situação. Suporta vários relatórios ao mesmo tempo (uma aba por lote) e exporta para **CSV** (compatível com Excel) ou impressão/PDF.
+Site estático que lê PDFs exportados do **iAuditor / SafetyCulture** para relatórios de **dormente de concreto** e apresenta os dados em **tabelas**, com campo/ensaio, valor, critério/limite e situação quando for possível calcular.
 
-Tudo roda **100% no navegador** com [PDF.js](https://mozilla.github.io/pdf.js/) — nenhum arquivo é enviado para servidor. Por isso funciona direto no **GitHub Pages**.
+Tudo roda **100% no navegador** com PDF.js. Nenhum PDF é enviado para servidor.
+
+## Modelos reconhecidos nesta versão
+
+O leitor foi ajustado com base nos relatórios de exemplo do pacote `varios tipos de relatórios padrão do iauditor.zip` e agora reconhece estes formatos:
+
+- **Ensaio | Dormente de Concreto**: ensaios de cargas, dimensionais, conclusão e critérios técnicos já conhecidos.
+- **Ensaio de bitola | Dormente de Concreto**: dormentes 01 a 10, lote, molde, cavidade e medida encontrada na régua de bitola.
+- **Inspeção de pista | Dormente de Concreto**: dormentes reprovados, dormentes reparados e quantidades por tipo de defeito.
+- **Concretagem | Dormente de Concreto**: termômetros do fornecedor, temperatura de lançamento RUMO, Slump Test de abatimento/espalhamento e conclusão.
+- **Arrancamento de USP | Dormente de Concreto**: cargas por posição A1/A2/B1/B2 e conclusão.
+
+Além do dicionário técnico dos ensaios de dormente, o parser tem uma extração genérica por layout. Isso ajuda a ler novos relatórios do iAuditor que mantenham o padrão de **pergunta/campo à esquerda** e **valor à direita**.
 
 ## Estrutura
 
-```
-site/
-├── index.html              # página
-├── .nojekyll               # impede o Jekyll de ignorar pastas/arquivos
-└── assets/
-    ├── css/styles.css      # identidade visual Rumo (azul-escuro, branco, verde, amarelo)
-    └── js/
-        ├── parser.js       # extrai ensaio + valor + critério + situação (independente do DOM)
-        └── app.js          # lê o PDF, monta as tabelas, exporta CSV/imprime
+```text
+Leitor-Iauditor-main/
+├── index.html      # página principal
+├── parser.js       # lógica de extração dos PDFs
+├── app.js          # leitura com PDF.js, abas, tabela e exportação CSV
+├── styles.css      # identidade visual
+└── README.md
 ```
 
 ## Como usar
 
-1. Abra o site.
-2. Arraste um ou mais PDFs para a área indicada (ou clique em **Selecionar PDFs**).
-3. Cada relatório vira uma aba; a tabela traz **Ensaio · Carga/Medida aplicada · Critério/Limite · Situação**.
-4. Use os botões para exportar **CSV** (individual ou de todos) ou **Imprimir / PDF**.
-
-## Publicar no GitHub Pages
-
-Opção A — publicar a pasta `site/` como raiz do site:
-
-1. Crie um repositório e suba o **conteúdo de dentro de `site/`** na raiz do repositório (ou seja, `index.html` deve ficar na raiz).
-2. Em **Settings → Pages**, em *Build and deployment*, selecione **Deploy from a branch**.
-3. Escolha a branch (ex.: `main`) e a pasta `/ (root)`. Salve.
-4. Aguarde alguns instantes e acesse a URL informada (`https://SEU-USUARIO.github.io/SEU-REPO/`).
-
-Opção B — manter a pasta `site/`:
-
-- Suba o projeto como está e, em **Settings → Pages**, selecione a pasta **`/site`** (ou `/docs`, se renomear). Salve.
-
-O arquivo `.nojekyll` já está incluído para evitar que o GitHub Pages (Jekyll) ignore arquivos/pastas.
+1. Abra o site por um servidor local ou publique no GitHub Pages.
+2. Arraste um ou mais PDFs para a área indicada.
+3. Cada relatório vira uma aba.
+4. Use os botões para exportar CSV individual, CSV de todos ou imprimir/salvar em PDF.
 
 ## Rodar localmente
 
-Por usar `fetch`/Web Worker, abra via servidor local (não pelo `file://`):
+Por usar PDF.js, prefira abrir por servidor local:
 
 ```bash
-cd site
+cd Leitor-Iauditor-main
 python3 -m http.server 8000
 # acesse http://localhost:8000
 ```
 
+## Publicar no GitHub Pages
+
+1. Envie estes arquivos para a raiz de um repositório GitHub.
+2. Em **Settings → Pages**, escolha **Deploy from a branch**.
+3. Selecione a branch principal e a pasta `/ (root)`.
+4. Aguarde a URL do GitHub Pages ficar disponível.
+
 ## Notas técnicas
 
-- O `parser.js` usa **posição do texto** (rótulo à esquerda, valor à direita) e um dicionário canônico do modelo *Dormente de Concreto*, com fallback genérico para outros checklists do iAuditor.
-- A coluna **Situação** é calculada a partir do critério do próprio relatório (dentro do limite / conforme / aprovado).
-- O PDF.js é carregado por CDN (cdnjs, v3.11.174); é só o que precisa de internet em tempo de execução.
+- `app.js` envia ao parser texto, posição horizontal, posição vertical e largura aproximada de cada item extraído pelo PDF.js.
+- `parser.js` agrupa itens em linhas e células, detecta seções dinamicamente e ignora fotos, rodapés e páginas de mídia.
+- A coluna **Situação** é calculada quando há critério claro, como faixa de temperatura, limite máximo, status aprovado/conforme ou critérios já conhecidos no dicionário técnico.
+- Quando o relatório contém apenas medição sem limite explícito, a situação aparece como **Medido**.

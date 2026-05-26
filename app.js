@@ -51,6 +51,7 @@
           str: it.str,
           x: it.transform[4],
           top: vp.height - it.transform[5], // origem no topo
+          w: it.width || 0
         }));
       pages.push({ pageNum: n, width: vp.width, height: vp.height, items });
       // a partir de "Resumo de mídia" são apenas fotos — pode parar
@@ -74,7 +75,7 @@
         const data = RumoParser.parse(pages);
         const total = data.sections.reduce((a, s) => a + s.rows.length, 0);
         if (!total && !data.conclusao) {
-          reports.push({ fileName: file.name, data, error: 'Não foi possível reconhecer ensaios neste PDF.' });
+          reports.push({ fileName: file.name, data, error: 'Não foi possível reconhecer campos ou ensaios neste PDF.' });
         } else {
           reports.push({ fileName: file.name, data });
         }
@@ -119,8 +120,7 @@
     if (!r) return;
     if (r.error || !r.data) {
       viewEl.innerHTML = '<div class="notice"><b>' + esc(r.fileName) + '</b><br>' +
-        esc(r.error || 'Erro desconhecido.') + '<br><br>Este leitor é calibrado para o relatório ' +
-        '<b>“Ensaio | Dormente de Concreto”</b> exportado do iAuditor.</div>';
+        esc(r.error || 'Erro desconhecido.') + '<br><br>Este leitor foi preparado para relatórios iAuditor de dormente de concreto.</div>';
       return;
     }
     viewEl.innerHTML = renderReport(r.data);
@@ -160,7 +160,7 @@
         '<td>' + badge(row) + '</td></tr>';
     }).join('');
     return '<div class="tablewrap chamfer"><table><thead><tr>' +
-      '<th>Ensaio</th><th class="num">Carga / Medida aplicada</th>' +
+      '<th>Campo / Ensaio</th><th class="num">Valor</th>' +
       '<th>Critério / Limite</th><th>Situação</th>' +
       '</tr></thead><tbody>' + body + '</tbody></table></div>';
   }
@@ -202,7 +202,7 @@
     list.forEach((item) => {
       const m = item.data.meta;
       lines.push(['# Lote', m['Lote'] || '', 'Fornecedor', m['Fornecedor'] || '', 'Data do ensaio', m['Data do ensaio'] || ''].map(csvField).join(';'));
-      lines.push(['Seção', 'Ensaio', 'Carga/Medida aplicada', 'Critério/Limite', 'Situação'].map(csvField).join(';'));
+      lines.push(['Seção', 'Campo/Ensaio', 'Valor', 'Critério/Limite', 'Situação'].map(csvField).join(';'));
       reportToRows(item.data).forEach((r) => lines.push(r.map(csvField).join(';')));
       lines.push('');
     });

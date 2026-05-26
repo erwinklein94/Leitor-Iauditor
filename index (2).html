@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RUMO · Leitor de Ensaios de Dormente</title>
+  <meta name="description" content="Leitor de relatórios de ensaio de dormente (iAuditor) — apresenta ensaio e carga/medida aplicada em tabela. 100% no navegador." />
+
+  <!-- Fontes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+/* =====================================================================
+   RUMO · Leitor de Ensaios de Dormente — estilos
+   Paleta: azul-escuro (dominante) · branco · verde-claro · amarelo (detalhe)
+   ===================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --navy:        #0A2A5E;   /* azul-escuro principal */
+  --navy-900:    #07203F;
+  --navy-700:    #123B7A;
+  --navy-500:    #1F56A8;
+  --white:       #FFFFFF;
+  --green:       #8DC63F;   /* verde-claro (secundária) */
+  --green-deep:  #2E9E73;   /* verde para situação OK */
+  --green-soft:  #EAF6DC;
+  --yellow:      #FFD200;   /* amarelo (detalhes) */
+  --blue-light:  #29ABE2;
+  --red:         #D6453C;
+  --red-soft:    #FBE7E5;
+
+  --bg:          #EBEEF4;
+  --surface:     #FFFFFF;
+  --line:        #DCE3EE;
+  --ink:         #0A2A5E;
+  --muted:       #5C6C88;
+
+  --chamfer: 12px;
+  --shadow: 0 18px 40px -24px rgba(10,42,94,.45);
+  --shadow-sm: 0 8px 20px -16px rgba(10,42,94,.5);
+  --font-display: 'Archivo', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 600px at 110% -10%, rgba(41,171,226,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(141,198,63,.10), transparent 55%),
+    var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.chamfer { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--chamfer)), calc(100% - var(--chamfer)) 100%, var(--chamfer) 100%, 0 calc(100% - var(--chamfer))); }
+
+/* ---------------- top bar ---------------- */
+.topbar {
+  background: var(--navy);
+  color: var(--white);
+  border-bottom: 4px solid var(--yellow);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar__in {
+  max-width: 1120px; margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; gap: 22px;
+}
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand .word {
+  font-family: var(--font-display); font-weight: 900; font-size: 30px;
+  letter-spacing: -.5px; line-height: 1; display: inline-flex; align-items: center;
+}
+.brand .word b { font-weight: 900; }
+.brand .dot {
+  width: 16px; height: 16px; margin-left: 2px; border-radius: 50%;
+  border: 3.5px solid var(--white); position: relative; top: 2px;
+  background:
+    conic-gradient(from 220deg, var(--blue-light) 0 60%, transparent 0);
+}
+.brand .tag { font-size: 11px; color: #B9CBE8; letter-spacing: .12em; text-transform: uppercase; }
+.topbar__title {
+  margin-left: auto; font-family: var(--font-display); font-weight: 600;
+  font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: #C7D6EE;
+  display: flex; align-items: center; gap: 9px;
+}
+.topbar__title svg { color: var(--yellow); }
+
+/* ---------------- layout ---------------- */
+main { max-width: 1120px; margin: 0 auto; padding: 34px 24px 60px; }
+.hero { margin-bottom: 26px; }
+.hero h1 {
+  font-family: var(--font-display); font-weight: 800; font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.05; margin: 0 0 10px; letter-spacing: -.02em;
+}
+.hero h1 .hl { color: var(--green-deep); }
+.hero p { margin: 0; color: var(--muted); max-width: 60ch; font-size: 15.5px; }
+
+/* ---------------- dropzone ---------------- */
+.dropzone {
+  background: var(--surface);
+  border: 2px dashed var(--navy-500);
+  padding: 46px 28px; text-align: center;
+  box-shadow: var(--shadow);
+  transition: .2s ease;
+  position: relative; overflow: hidden;
+}
+.dropzone::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(41,171,226,.06), transparent 40%);
+  pointer-events: none;
+}
+.dropzone.drag { border-color: var(--green-deep); background: #F5FBF0; transform: translateY(-2px); }
+.dropzone .ic {
+  width: 58px; height: 58px; margin: 0 auto 16px; display: grid; place-items: center;
+  background: var(--navy); color: var(--yellow);
+}
+.dropzone h2 { font-family: var(--font-display); font-weight: 700; font-size: 20px; margin: 0 0 6px; }
+.dropzone p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+.btn {
+  font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: .02em;
+  border: none; cursor: pointer; padding: 12px 22px; color: var(--white);
+  background: var(--navy); display: inline-flex; align-items: center; gap: 9px;
+  transition: .15s ease;
+}
+.btn:hover { background: var(--navy-700); transform: translateY(-1px); }
+.btn:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+.btn--ghost { background: var(--white); color: var(--navy); box-shadow: inset 0 0 0 2px var(--navy); }
+.btn--ghost:hover { background: #F0F4FA; }
+.btn--green { background: var(--green-deep); }
+.btn--green:hover { background: #268a64; }
+.btn svg { width: 17px; height: 17px; }
+.hint { margin-top: 16px; font-size: 12.5px; color: var(--muted); }
+.hint b { color: var(--navy); }
+
+/* ---------------- tabs ---------------- */
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.tab {
+  font-family: var(--font-mono); font-weight: 600; font-size: 12.5px;
+  background: var(--white); color: var(--navy); border: none; cursor: pointer;
+  padding: 9px 15px; box-shadow: inset 0 0 0 1.5px var(--line);
+  display: inline-flex; align-items: center; gap: 8px; transition: .15s;
+}
+.tab:hover { box-shadow: inset 0 0 0 1.5px var(--navy-500); }
+.tab.active { background: var(--navy); color: var(--white); box-shadow: none; }
+.tab .x { opacity: .55; font-size: 14px; }
+.tab .x:hover { opacity: 1; }
+
+/* ---------------- report ---------------- */
+.report { animation: rise .45s cubic-bezier(.2,.7,.3,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.idcard {
+  background: var(--navy); color: var(--white); padding: 22px 24px; margin-bottom: 16px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.idcard::after {
+  content: ""; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px;
+  background: repeating-linear-gradient(135deg, rgba(255,210,0,.16) 0 10px, transparent 10px 22px);
+  transform: rotate(8deg);
+}
+.idcard h3 {
+  font-family: var(--font-display); font-weight: 800; font-size: 13px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--yellow); margin: 0 0 16px;
+}
+.idgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px 22px; }
+.idgrid .k { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: #9DB6DC; margin-bottom: 3px; }
+.idgrid .v { font-family: var(--font-mono); font-weight: 600; font-size: 15px; word-break: break-word; }
+
+/* conclusion banner */
+.banner {
+  display: flex; align-items: center; gap: 16px; padding: 18px 22px; margin-bottom: 22px;
+  box-shadow: var(--shadow-sm); font-family: var(--font-display);
+}
+.banner--ok { background: var(--green-soft); color: #1d6b4c; box-shadow: var(--shadow-sm), inset 0 0 0 2px #bfe39a; }
+.banner--fail { background: var(--red-soft); color: #9a261d; box-shadow: var(--shadow-sm), inset 0 0 0 2px #f1b3ad; }
+.banner .seal {
+  width: 46px; height: 46px; display: grid; place-items: center; flex: none; color: var(--white);
+}
+.banner--ok .seal { background: var(--green-deep); }
+.banner--fail .seal { background: var(--red); }
+.banner .lbl { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+.banner .val { font-size: 24px; font-weight: 800; line-height: 1; }
+
+/* toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.toolbar .btn { padding: 10px 16px; font-size: 13px; }
+
+/* section + table */
+.section { margin-bottom: 26px; }
+.section__head {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.section__head h3 {
+  font-family: var(--font-display); font-weight: 800; font-size: 17px; margin: 0;
+}
+.section__head .bar { height: 4px; flex: 1; background: linear-gradient(90deg, var(--yellow), transparent); }
+.section__head .count {
+  font-family: var(--font-mono); font-size: 12px; color: var(--muted);
+  background: var(--white); padding: 3px 9px; box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.tablewrap { background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  background: var(--navy); color: var(--white); text-align: left; padding: 12px 16px;
+  font-family: var(--font-display); font-weight: 600; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase;
+}
+thead th.num, td.num { text-align: right; }
+tbody td { padding: 13px 16px; border-bottom: 1px solid var(--line); font-size: 14px; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #F4F7FC; }
+tbody tr.sub td:first-child { padding-left: 30px; color: var(--muted); font-size: 13px; }
+.ensaio { font-weight: 500; }
+.valor { font-family: var(--font-mono); font-weight: 700; font-size: 15px; color: var(--navy); white-space: nowrap; }
+.criterio { color: var(--muted); font-size: 13px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px;
+  font-family: var(--font-display); font-weight: 600; font-size: 12px; white-space: nowrap;
+  clip-path: polygon(0 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,5px 100%,0 calc(100% - 5px));
+}
+.badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; }
+.badge--ok { background: var(--green-soft); color: #1d6b4c; }
+.badge--ok::before { background: var(--green-deep); }
+.badge--fail { background: var(--red-soft); color: #9a261d; }
+.badge--fail::before { background: var(--red); }
+.badge--info { background: #E7F1FB; color: var(--navy-700); }
+.badge--info::before { background: var(--blue-light); }
+
+/* error / empty */
+.notice {
+  background: var(--white); padding: 22px 24px; box-shadow: var(--shadow-sm);
+  border-left: 5px solid var(--yellow); margin-top: 14px;
+}
+.notice b { color: var(--navy); }
+
+/* footer */
+footer {
+  text-align: center; color: var(--muted); font-size: 12.5px; padding: 26px 24px 40px;
+}
+footer .word { font-family: var(--font-display); font-weight: 800; color: var(--navy); }
+
+/* spinner */
+.spinner {
+  width: 34px; height: 34px; border: 3.5px solid rgba(10,42,94,.18); border-top-color: var(--navy);
+  border-radius: 50%; animation: spin .8s linear infinite; margin: 8px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 620px) {
+  .topbar__title { display: none; }
+  .idgrid { grid-template-columns: repeat(2, 1fr); }
+  thead th:nth-child(3), tbody td:nth-child(3) { display: none; } /* esconde critério em telas pequenas */
+}
+
+/* ---------------- impressão ---------------- */
+@media print {
+  body { background: var(--white); }
+  .topbar, .dropzone, .tabs, .toolbar, footer, .hero p, .tab .x { display: none !important; }
+  main { padding: 0; max-width: none; }
+  .idcard, .tablewrap, .banner { box-shadow: none; border: 1px solid #ccc; }
+  .idcard { color: #000; background: #fff; }
+  .idcard h3, .idgrid .k { color: #333; }
+  .idgrid .v { color: #000; }
+  thead th { background: #eee !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .report { animation: none; }
+}
+
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar__in">
+      <a class="brand" href="./" aria-label="Rumo">
+        <span class="word">rum<span class="dot">o</span></span>
+        <span class="tag">Somos o Brasil em movimento</span>
+      </a>
+      <div class="topbar__title">
+        <span class="ic" id="icTitle" aria-hidden="true"></span>
+        <span>Leitor de Ensaios de Dormente</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Relatórios do <span class="hl">iAuditor</span> em tabela, na hora.</h1>
+      <p>Solte um ou mais PDFs de ensaio de dormente de concreto e veja cada <strong>ensaio</strong> com a <strong>carga ou medida aplicada</strong>, o critério e a situação. Tudo roda no seu navegador — nenhum arquivo é enviado para servidor.</p>
+    </section>
+
+    <section class="dropzone chamfer" id="dropzone">
+      <span class="ic" id="icUpload" aria-hidden="true"></span>
+      <h2>Arraste os PDFs aqui</h2>
+      <p>ou selecione os relatórios exportados do iAuditor</p>
+      <button class="btn" type="button" id="pickBtn">Selecionar PDFs</button>
+      <p class="hint">Você pode soltar vários relatórios de uma vez.</p>
+      <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden />
+    </section>
+
+    <section id="reports" hidden>
+      <nav class="tabs" id="tabs" aria-label="Relatórios carregados"></nav>
+      <div id="reportView"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>RUMO · Leitor de Ensaios — processamento 100% local no navegador.</span>
+  </footer>
+
+  <!-- PDF.js (renderização/extração no navegador) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Parser + aplicação -->
+  <script>
+/* =====================================================================
+   RUMO · Leitor de Relatórios de Ensaio de Dormente (iAuditor)
+   parser.js — lógica de extração pura (sem DOM, testável em Node)
+
+   Entrada esperada: lista de páginas no formato
+     [{ pageNum, width, height, items: [{ str, x, top }] }]
+   onde x = posição horizontal (px, origem à esquerda)
+         top = posição vertical (px, origem no topo da página)
+
+   A detecção é POSICIONAL e independente do lote/fornecedor/data:
+     · rótulos do ensaio ficam na coluna da esquerda;
+     · o valor (carga ou medida) fica na coluna da direita,
+       alinhado pelo topo ao bloco do ensaio.
+   ===================================================================== */
+(function (root, factory) {
+  if (typeof module !== 'undefined' && module.exports) module.exports = factory();
+  else root.RumoParser = factory();
+})(typeof window !== 'undefined' ? window : globalThis, function () {
+  'use strict';
+
+  /* ---------- utilidades de texto ---------- */
+  const norm = (s) =>
+    (s || '').toLowerCase().normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+  const compact = (s) => (s || '').replace(/\s+/g, '');
+  const clean = (s) => (s || '').replace(/\s+/g, ' ').trim();
+
+  const RE_NUM = /^-?\d{1,6}([.,]\d+)?$/;
+  const RE_NUM_UNIT = /^-?\d{1,6}([.,]\d+)?(kn|mm|nm|n|%)$/i;
+  const RE_STATUS = /^(aprovado|reprovado|sim|nao|conforme|naoconforme)$/;
+  const RE_NOISE = [
+    /^foto\s*\d+$/i,            // legendas de foto
+    /^\d+\s*\/\s*\d+$/,         // numeração de página  (12/29)
+  ];
+
+  function isNoise(str) {
+    const c = compact(str);
+    if (!c) return true;
+    if (RE_NOISE.some((r) => r.test(str.trim()))) return true;
+    // rodapé do relatório: "FERRONORTE / 2824 / Cavan - SP / .../ Erwin Klein"
+    if (/ferronorte\/?\d{2,}\/?/i.test(c) && /\/.*\//.test(str)) return true;
+    return false;
+  }
+
+  function isValueToken(str) {
+    const c = compact(str);
+    return RE_NUM.test(c) || RE_NUM_UNIT.test(c) || RE_STATUS.test(norm(c));
+  }
+
+  /* ---------- dicionário do modelo "Dormente de Concreto" ---------- */
+  /* key = trecho normalizado procurado no texto do bloco
+     A atribuição usa a MAIOR key que for substring do bloco (desambigua
+     ensaio x pergunta "apresentou fissuras"). */
+  const DICT = [
+    // ---- cargas ----
+    { key: 'momentopositivonoapoiodostrilhosapresentoufissuras', name: '↳ Apresentou fissuras? (apoio, positivo)', kind: 'bool' },
+    { key: 'momentopositivonoapoiodostrilhos', name: 'Momento positivo no apoio dos trilhos', unit: 'kN', crit: 'Não deve fissurar' },
+    { key: 'momentonegativonoapoiodostrilhosapresentoufissuras', name: '↳ Apresentou fissuras? (apoio, negativo)', kind: 'bool' },
+    { key: 'momentonegativonoapoiodostrilhos', name: 'Momento negativo no apoio dos trilhos', unit: 'kN', crit: 'Não deve fissurar' },
+    { key: 'momentopositivonocentrododormenteapresentoufissuras', name: '↳ Apresentou fissuras? (centro, positivo)', kind: 'bool' },
+    { key: 'momentopositivonocentrododormente', name: 'Momento positivo no centro do dormente', unit: 'kN', crit: 'Não deve fissurar' },
+    { key: 'momentonegativonocentrododormenteapresentoufissuras', name: '↳ Apresentou fissuras? (centro, negativo)', kind: 'bool' },
+    { key: 'momentonegativonocentrododormente', name: 'Momento negativo no centro do dormente', unit: 'kN', crit: 'Não deve fissurar' },
+    { key: 'naancoragemapresentoufissura', name: '↳ Ancoragem: fissura > 0,5 mm após descarga?', kind: 'bool' },
+    { key: 'ancoragemcargaaplicada50', name: 'Ancoragem (carga 50% acima do mom. positivo)', unit: 'kN', crit: 'Sem fissura > 0,5 mm após descarga' },
+    { key: 'aderenciaescorregamento', name: 'Aderência — escorregamento do aço', crit: 'Máx. 0,025 mm', max: 0.025 },
+    { key: 'ensaiodearrancamentonaombreiraa', name: 'Arrancamento na ombreira A', unit: 'kN', crit: 'Carga 53,40 kN' },
+    { key: 'ensaiodearrancamentonaombreirab', name: 'Arrancamento na ombreira B', unit: 'kN', crit: 'Carga 53,40 kN' },
+    { key: 'arrancamentonaombreiraa', name: 'Arrancamento na ombreira A', unit: 'kN', crit: 'Carga 53,40 kN' },
+    { key: 'arrancamentonaombreirab', name: 'Arrancamento na ombreira B', unit: 'kN', crit: 'Carga 53,40 kN' },
+    // ---- dimensionais ----
+    { key: 'inclinacaodabasedeapoiodostrilhos', name: 'Inclinação da base de apoio dos trilhos', crit: 'Entre 4,545 e 5,556', min: 4.545, max: 5.556 },
+    { key: 'empenotransversal', name: 'Empeno transversal (torção) entre apoios', crit: 'Máx. 1 mm', max: 1 },
+    { key: 'ensaiodetorcaonaombreiraa', name: 'Torção na ombreira A', kind: 'status', crit: 'Carga 340 N·m' },
+    { key: 'ensaiodetorcaonaombreirab', name: 'Torção na ombreira B', kind: 'status', crit: 'Carga 340 N·m' },
+    { key: 'ocomprimentododormente', name: 'Comprimento do dormente', crit: '2.800 mm (±6)', min: 2794, max: 2806 },
+    { key: 'baseretangularnatesteira', name: 'Base retangular na testeira', crit: '300 mm (±3)', min: 297, max: 303 },
+    { key: 'alturadodormentenasecaoentreombreiras', name: 'Altura entre ombreiras', crit: '250 mm (+6/−3)', min: 247, max: 256 },
+    { key: 'alturadodormentenasecaodocentro', name: 'Altura na seção do centro', crit: '220 mm (+6/−3)', min: 217, max: 226 },
+    { key: 'distanciainternaentreombreirasdemesmoapoio', name: 'Dist. interna entre ombreiras (mesmo apoio)', crit: '154,50 mm (+1,5/−0,5)', min: 154.0, max: 156.0 },
+    { key: 'distanciainternaentreombreirasexternas', name: 'Dist. interna entre ombreiras externas', kind: 'status', crit: 'Passa / Não passa' },
+    { key: 'verificacaodaalturadaombreira', name: 'Altura da ombreira', kind: 'status', crit: 'Passa / Não passa' },
+    // ---- conclusão ----
+    { key: 'loteaprovado', name: 'Lote aprovado?', kind: 'conclusao' },
+  ];
+
+  function matchDict(blockNorm) {
+    let best = null, bestIdx = Infinity;
+    for (const e of DICT) {
+      const idx = blockNorm.indexOf(e.key);
+      if (idx === -1) continue;
+      // título lidera o bloco => menor índice vence; empate => maior key
+      if (idx < bestIdx || (idx === bestIdx && (!best || e.key.length > best.key.length))) {
+        best = e; bestIdx = idx;
+      }
+    }
+    return best;
+  }
+
+  const SECTIONS = [
+    { key: 'ensaiosdecargas', title: 'Ensaios de cargas' },
+    { key: 'ensaiosdimensionais', title: 'Ensaios dimensionais' },
+    { key: 'conclusao', title: 'Conclusão' },
+  ];
+  const STOP_KEY = 'resumodemidia';
+
+  const META = [
+    { key: 'destino', label: 'Destino' },
+    { key: 'fiscalresponsavel', label: 'Fiscal responsável' },
+    { key: 'fornecedor', label: 'Fornecedor' },
+    { key: 'tipodedormente', label: 'Tipo de dormente' },
+    { key: 'datadoensaio', label: 'Data do ensaio' },
+    { key: 'datadeproducaododormente', label: 'Data de produção' },
+    { key: 'lote', label: 'Lote' },
+    { key: 'molde', label: 'Molde' },
+    { key: 'cavidade', label: 'Cavidade' },
+    { key: 'pista', label: 'Pista' },
+    { key: 'seriedelotes', label: 'Série de lotes' },
+  ];
+
+  /* ---------- agrupamento em linhas ---------- */
+  function groupLines(items, tol) {
+    tol = tol || 4;
+    const lines = [];
+    const sorted = items.slice().sort((a, b) => a.top - b.top || a.x - b.x);
+    for (const it of sorted) {
+      const ln = lines.find((l) => Math.abs(l.top - it.top) <= tol);
+      if (ln) { ln.items.push(it); ln.top = (ln.top + it.top) / 2; }
+      else lines.push({ top: it.top, items: [it] });
+    }
+    for (const l of lines) {
+      l.items.sort((a, b) => a.x - b.x);
+      l.text = clean(l.items.map((i) => i.str).join(' '));
+      l.x = l.items[0].x;
+    }
+    return lines.sort((a, b) => a.top - b.top);
+  }
+
+  /* ---------- parser principal ---------- */
+  function parse(pagesRaw) {
+    const pages = [];
+    for (const pg of pagesRaw) {
+      const W = pg.width || 595;
+      const left = [], right = [];
+      for (const it of pg.items) {
+        if (isNoise(it.str)) continue;
+        (it.x >= 0.5 * W ? right : left).push(it);
+      }
+      pages.push({
+        pageNum: pg.pageNum, width: W,
+        leftLines: groupLines(left, 4),
+        rightLines: groupLines(right, 4),
+      });
+    }
+
+    /* --- metadados (1ª página) --- */
+    const meta = {};
+    const p1 = pages[0];
+    if (p1) {
+      for (const m of META) {
+        const ln = p1.leftLines.find((l) => norm(l.text).indexOf(m.key) === 0)
+          || p1.leftLines.find((l) => norm(l.text).indexOf(m.key) !== -1);
+        if (!ln) continue;
+        const vals = p1.rightLines
+          .filter((r) => r.top >= ln.top - 12 && r.top <= ln.top + 18)
+          .sort((a, b) => a.top - b.top)
+          .map((r) => r.text);
+        if (vals.length) meta[m.label] = clean(vals.join(' '));
+      }
+      const concl = p1.rightLines.find((r) => /conclu/i.test(r.text));
+      if (concl) {
+        const m = concl.text.match(/conclu\S*/i);
+        meta['Situação do relatório'] = m ? m[0] : 'Concluído';
+      }
+    }
+
+    /* --- cabeçalhos de seção (página, top) em ordem do documento --- */
+    const headers = [];
+    pages.forEach((pg) => {
+      pg.leftLines.forEach((l) => {
+        const n = norm(l.text);
+        if (n.indexOf(STOP_KEY) !== -1) headers.push({ page: pg.pageNum, top: l.top, stop: true });
+        SECTIONS.forEach((s) => {
+          if (n.indexOf(s.key) !== -1) headers.push({ page: pg.pageNum, top: l.top, title: s.title });
+        });
+      });
+    });
+    const stop = headers.find((h) => h.stop);
+    const before = (page, top) => (!stop) || (page < stop.page) || (page === stop.page && top < stop.top);
+    function sectionAt(page, top) {
+      let cur = null;
+      for (const h of headers) {
+        if (h.stop) continue;
+        if (h.page < page || (h.page === page && h.top <= top + 1)) cur = h.title;
+      }
+      return cur;
+    }
+
+    /* --- localizar título do bloco acima de cada valor --- */
+    function blockFor(pg, vtop) {
+      const cands = pg.leftLines.filter((l) => l.top <= vtop + 14).sort((a, b) => a.top - b.top);
+      if (!cands.length) return null;
+      const chain = [cands[cands.length - 1]];
+      for (let i = cands.length - 2; i >= 0; i--) {
+        if (chain[0].top - cands[i].top <= 16) chain.unshift(cands[i]);
+        else break;
+      }
+      return { title: chain[0].text, blockNorm: norm(chain.map((c) => c.text).join(' ')) };
+    }
+
+    /* --- coletar valores (coluna direita) na ordem do documento --- */
+    const rawRows = [];
+    pages.forEach((pg) => {
+      pg.rightLines.forEach((r) => {
+        if (!before(pg.pageNum, r.top)) return;
+        if (!isValueToken(r.text)) return;
+        const blk = blockFor(pg, r.top);
+        if (!blk) return;
+        rawRows.push({ page: pg.pageNum, top: r.top, value: clean(r.text), block: blk });
+      });
+    });
+    rawRows.sort((a, b) => a.page - b.page || a.top - b.top);
+
+    /* --- montar linhas finais --- */
+    const sections = {};
+    let conclusao = null;
+    const seen = new Set();
+    for (const rr of rawRows) {
+      const sect = sectionAt(rr.page, rr.top);
+      if (!sect) continue; // valores da capa/metadados não são ensaios
+      const entry = matchDict(rr.block.blockNorm);
+      const name = entry ? entry.name : (clean(rr.block.title) || '(sem rótulo)');
+      const dedupe = sect + '|' + name + '|' + rr.value;
+      if (seen.has(dedupe)) continue;
+      seen.add(dedupe);
+
+      const row = buildRow(name, rr.value, entry);
+      if (entry && entry.kind === 'conclusao') { conclusao = row; continue; }
+      (sections[sect] = sections[sect] || []).push(row);
+    }
+
+    const order = ['Ensaios de cargas', 'Ensaios dimensionais', 'Conclusão', 'Outros ensaios'];
+    const sectionList = Object.keys(sections)
+      .sort((a, b) => (order.indexOf(a) + 1 || 99) - (order.indexOf(b) + 1 || 99))
+      .map((title) => ({ title, rows: sections[title] }));
+
+    return { meta, sections: sectionList, conclusao };
+  }
+
+  /* ---------- formatação de uma linha (valor + critério + situação) ---------- */
+  function toNumber(v) {
+    const m = String(v).replace(/[^0-9.,-]/g, '').replace(/\.(?=\d{3}\b)/g, '').replace(',', '.');
+    const n = parseFloat(m);
+    return isNaN(n) ? null : n;
+  }
+  function hasUnit(v) { return /[a-zA-Z]/.test(v); }
+  function formatValue(v, entry) {
+    const n = toNumber(v);
+    const status = RE_STATUS.test(norm(v));
+    if (status) return clean(v);
+    if (n === null) return clean(v);
+    let out = String(v).trim();
+    // dot decimal -> comma (pt-BR), mantém unidade se já houver
+    out = out.replace(/(\d),(?=\d)/g, '$1.'); // normaliza primeiro
+    let txt = out;
+    const num = txt.match(/-?\d+(\.\d+)?/);
+    if (num) {
+      const ptbr = num[0].replace('.', ',');
+      txt = txt.replace(num[0], ptbr);
+    }
+    if (!hasUnit(v) && entry && entry.unit) txt += ' ' + entry.unit;
+    txt = txt.replace(/(\d)\s*(kN|mm|N·?m|%)\b/i, '$1 $2'); // espaço antes da unidade
+    return txt.trim();
+  }
+  function buildRow(name, value, entry) {
+    const row = {
+      ensaio: name,
+      valor: formatValue(value, entry),
+      criterio: entry && entry.crit ? entry.crit : '—',
+      situacao: 'info',
+      situacaoLabel: 'Medido',
+    };
+    const nv = norm(value);
+    if (entry && entry.kind === 'bool') {
+      // pergunta "apresentou fissuras?": esperado = Não
+      row.criterio = entry.crit || 'Esperado: Não';
+      row.situacao = (nv === 'nao') ? 'ok' : 'fail';
+      row.situacaoLabel = (nv === 'nao') ? 'Conforme' : 'Atenção';
+    } else if (entry && entry.kind === 'status') {
+      row.situacao = (nv === 'aprovado' || nv === 'conforme') ? 'ok' : 'fail';
+      row.situacaoLabel = clean(value);
+    } else if (entry && entry.kind === 'conclusao') {
+      row.criterio = '—';
+      row.situacao = (nv === 'sim' || nv === 'aprovado') ? 'ok' : 'fail';
+      row.situacaoLabel = clean(value);
+    } else if (entry && (entry.min != null || entry.max != null)) {
+      const n = toNumber(value);
+      if (n != null) {
+        const okMin = entry.min == null || n >= entry.min - 1e-9;
+        const okMax = entry.max == null || n <= entry.max + 1e-9;
+        row.situacao = (okMin && okMax) ? 'ok' : 'fail';
+        row.situacaoLabel = (okMin && okMax) ? 'Dentro do limite' : 'Fora do limite';
+      }
+    } else if (entry && entry.unit === 'kN') {
+      row.situacao = 'info';
+      row.situacaoLabel = 'Carga aplicada';
+    }
+    return row;
+  }
+
+  return { parse, _internals: { norm, isValueToken, matchDict } };
+});
+
+  </script>
+  <script>
+/* =====================================================================
+   RUMO · Leitor de Ensaios de Dormente — app.js
+   Lê o PDF no navegador (PDF.js), extrai texto com posição e usa o
+   RumoParser para montar as tabelas. 100% client-side (GitHub Pages).
+   ===================================================================== */
+(function () {
+  'use strict';
+
+  // Worker do PDF.js (mesma versão do <script> no HTML)
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+  const ICONS = {
+    upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg>',
+    train: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><rect x="5" y="3" width="14" height="13" rx="2"/><path d="M5 10h14M9 20l-2 2M15 20l2 2"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/></svg>',
+    download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M5 21h14"/></svg>',
+    layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5 9-5zM3 13l9 5 9-5"/></svg>',
+    print: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M8 14h8v7H8z"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M20 6L9 17l-5-5"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="24" height="24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>',
+  };
+
+  const dropzone = $('#dropzone');
+  const fileInput = $('#fileInput');
+  const reportsEl = $('#reports');
+  const tabsEl = $('#tabs');
+  const viewEl = $('#reportView');
+
+  let reports = [];   // { fileName, data }
+  let active = 0;
+
+  /* ---------- PDF -> páginas com posições ---------- */
+  async function readPdf(file) {
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    const pages = [];
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const page = await pdf.getPage(n);
+      const vp = page.getViewport({ scale: 1 });
+      const tc = await page.getTextContent();
+      const items = tc.items
+        .filter((it) => it.str && it.str.trim())
+        .map((it) => ({
+          str: it.str,
+          x: it.transform[4],
+          top: vp.height - it.transform[5], // origem no topo
+        }));
+      pages.push({ pageNum: n, width: vp.width, height: vp.height, items });
+      // a partir de "Resumo de mídia" são apenas fotos — pode parar
+      if (items.some((i) => /resumo de m[ií]dia/i.test(i.str))) break;
+    }
+    return pages;
+  }
+
+  /* ---------- carga de arquivos ---------- */
+  async function handleFiles(fileList) {
+    const files = Array.from(fileList).filter((f) => /\.pdf$/i.test(f.name));
+    if (!files.length) { showError('Selecione um arquivo PDF.'); return; }
+
+    reportsEl.hidden = false;
+    viewEl.innerHTML = '<div class="notice"><div class="spinner"></div><p style="text-align:center;margin:6px 0 0;color:var(--muted)">Lendo relatório…</p></div>';
+    reportsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    for (const file of files) {
+      try {
+        const pages = await readPdf(file);
+        const data = RumoParser.parse(pages);
+        const total = data.sections.reduce((a, s) => a + s.rows.length, 0);
+        if (!total && !data.conclusao) {
+          reports.push({ fileName: file.name, data, error: 'Não foi possível reconhecer ensaios neste PDF.' });
+        } else {
+          reports.push({ fileName: file.name, data });
+        }
+      } catch (e) {
+        console.error(e);
+        reports.push({ fileName: file.name, data: null, error: 'Falha ao ler o PDF (' + (e.message || e) + ').' });
+      }
+    }
+    active = reports.length - 1;
+    renderTabs();
+    renderActive();
+  }
+
+  /* ---------- abas (vários relatórios) ---------- */
+  function renderTabs() {
+    if (reports.length <= 1) { tabsEl.innerHTML = ''; tabsEl.style.display = 'none'; return; }
+    tabsEl.style.display = 'flex';
+    tabsEl.innerHTML = reports.map((r, i) => {
+      const lote = r.data && r.data.meta && r.data.meta['Lote'] ? 'Lote ' + r.data.meta['Lote'] : r.fileName;
+      return '<button class="tab ' + (i === active ? 'active' : '') + '" data-i="' + i + '">' +
+        ICONS.train + '<span>' + esc(lote) + '</span>' +
+        '<span class="x" data-close="' + i + '" title="Remover">✕</span></button>';
+    }).join('');
+    tabsEl.querySelectorAll('.tab').forEach((t) => {
+      t.addEventListener('click', (ev) => {
+        const close = ev.target.closest('[data-close]');
+        if (close) { ev.stopPropagation(); removeReport(+close.dataset.close); return; }
+        active = +t.dataset.i; renderTabs(); renderActive();
+      });
+    });
+  }
+  function removeReport(i) {
+    reports.splice(i, 1);
+    if (!reports.length) { reportsEl.hidden = true; tabsEl.innerHTML = ''; return; }
+    active = Math.min(active, reports.length - 1);
+    renderTabs(); renderActive();
+  }
+
+  /* ---------- render do relatório ativo ---------- */
+  function renderActive() {
+    const r = reports[active];
+    if (!r) return;
+    if (r.error || !r.data) {
+      viewEl.innerHTML = '<div class="notice"><b>' + esc(r.fileName) + '</b><br>' +
+        esc(r.error || 'Erro desconhecido.') + '<br><br>Este leitor é calibrado para o relatório ' +
+        '<b>“Ensaio | Dormente de Concreto”</b> exportado do iAuditor.</div>';
+      return;
+    }
+    viewEl.innerHTML = renderReport(r.data);
+    bindToolbar(r.data, r.fileName);
+  }
+
+  function metaCard(meta) {
+    const order = ['Destino', 'Fornecedor', 'Tipo de dormente', 'Lote', 'Molde', 'Cavidade', 'Pista',
+      'Fiscal responsável', 'Data do ensaio', 'Data de produção', 'Série de lotes', 'Situação do relatório'];
+    const keys = order.filter((k) => meta[k]).concat(Object.keys(meta).filter((k) => order.indexOf(k) === -1));
+    const cells = keys.map((k) =>
+      '<div><div class="k">' + esc(k) + '</div><div class="v">' + esc(meta[k]) + '</div></div>').join('');
+    return '<div class="idcard chamfer"><h3>Identificação do lote</h3><div class="idgrid">' + cells + '</div></div>';
+  }
+
+  function banner(concl) {
+    if (!concl) return '';
+    const ok = concl.situacao === 'ok';
+    return '<div class="banner banner--' + (ok ? 'ok' : 'fail') + ' chamfer">' +
+      '<div class="seal chamfer">' + (ok ? ICONS.check : ICONS.alert) + '</div>' +
+      '<div><div class="lbl">' + esc(concl.ensaio) + '</div>' +
+      '<div class="val">' + esc(String(concl.valor).toUpperCase()) + '</div></div></div>';
+  }
+
+  function badge(row) {
+    return '<span class="badge badge--' + row.situacao + '">' + esc(row.situacaoLabel) + '</span>';
+  }
+
+  function table(rows) {
+    const body = rows.map((row) => {
+      const sub = /^↳/.test(row.ensaio) ? ' sub' : '';
+      const name = row.ensaio.replace(/^↳\s*/, '');
+      return '<tr class="' + sub.trim() + '">' +
+        '<td class="ensaio">' + esc(name) + '</td>' +
+        '<td class="num"><span class="valor">' + esc(row.valor) + '</span></td>' +
+        '<td class="criterio">' + esc(row.criterio) + '</td>' +
+        '<td>' + badge(row) + '</td></tr>';
+    }).join('');
+    return '<div class="tablewrap chamfer"><table><thead><tr>' +
+      '<th>Ensaio</th><th class="num">Carga / Medida aplicada</th>' +
+      '<th>Critério / Limite</th><th>Situação</th>' +
+      '</tr></thead><tbody>' + body + '</tbody></table></div>';
+  }
+
+  function section(s) {
+    return '<div class="section"><div class="section__head">' +
+      '<h3>' + esc(s.title) + '</h3><div class="bar"></div>' +
+      '<span class="count">' + s.rows.length + ' ensaios</span></div>' +
+      table(s.rows) + '</div>';
+  }
+
+  function renderReport(data) {
+    return '<div class="report">' +
+      metaCard(data.meta) +
+      banner(data.conclusao) +
+      '<div class="toolbar">' +
+        '<button class="btn btn--green" data-act="csv">' + ICONS.download + 'Baixar CSV</button>' +
+        (reports.length > 1 ? '<button class="btn btn--ghost" data-act="csvall">' + ICONS.layers + 'CSV de todos</button>' : '') +
+        '<button class="btn btn--ghost" data-act="print">' + ICONS.print + 'Imprimir / PDF</button>' +
+      '</div>' +
+      data.sections.map(section).join('') +
+      '</div>';
+  }
+
+  /* ---------- exportação ---------- */
+  function reportToRows(data) {
+    const out = [];
+    data.sections.forEach((s) => s.rows.forEach((row) =>
+      out.push([s.title, row.ensaio.replace(/^↳\s*/, ''), row.valor, row.criterio, row.situacaoLabel])));
+    if (data.conclusao) out.push(['Conclusão', data.conclusao.ensaio, data.conclusao.valor, data.conclusao.criterio, data.conclusao.situacaoLabel]);
+    return out;
+  }
+  function csvField(v) {
+    v = String(v == null ? '' : v);
+    return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  }
+  function buildCsv(list) {
+    const lines = [];
+    list.forEach((item) => {
+      const m = item.data.meta;
+      lines.push(['# Lote', m['Lote'] || '', 'Fornecedor', m['Fornecedor'] || '', 'Data do ensaio', m['Data do ensaio'] || ''].map(csvField).join(';'));
+      lines.push(['Seção', 'Ensaio', 'Carga/Medida aplicada', 'Critério/Limite', 'Situação'].map(csvField).join(';'));
+      reportToRows(item.data).forEach((r) => lines.push(r.map(csvField).join(';')));
+      lines.push('');
+    });
+    return '\uFEFF' + lines.join('\r\n'); // BOM p/ Excel
+  }
+  function download(name, text) {
+    const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  }
+
+  function bindToolbar(data, fileName) {
+    const base = (data.meta['Lote'] ? 'ensaio_lote_' + data.meta['Lote'] : fileName.replace(/\.pdf$/i, '')).replace(/[^\w-]+/g, '_');
+    viewEl.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => {
+      const act = b.dataset.act;
+      if (act === 'csv') download(base + '.csv', buildCsv([reports[active]]));
+      else if (act === 'csvall') download('ensaios_dormente_todos.csv', buildCsv(reports.filter((r) => r.data)));
+      else if (act === 'print') window.print();
+    }));
+  }
+
+  function showError(msg) {
+    reportsEl.hidden = false;
+    viewEl.innerHTML = '<div class="notice"><b>Atenção:</b> ' + esc(msg) + '</div>';
+  }
+
+  /* ---------- eventos de upload ---------- */
+  fileInput.addEventListener('change', (e) => { handleFiles(e.target.files); fileInput.value = ''; });
+  const pickBtn = $('#pickBtn');
+  if (pickBtn) pickBtn.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+  dropzone.addEventListener('click', (e) => { if (e.target.closest('button')) return; fileInput.click(); });
+  ['dragenter', 'dragover'].forEach((ev) => dropzone.addEventListener(ev, (e) => {
+    e.preventDefault(); dropzone.classList.add('drag');
+  }));
+  ['dragleave', 'drop'].forEach((ev) => dropzone.addEventListener(ev, (e) => {
+    e.preventDefault(); if (ev !== 'dragleave' || !dropzone.contains(e.relatedTarget)) dropzone.classList.remove('drag');
+  }));
+  dropzone.addEventListener('drop', (e) => { if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files); });
+
+  // injeta ícones estáticos
+  $('#icUpload').innerHTML = ICONS.upload;
+  $('#icTitle').innerHTML = ICONS.train;
+})();
+
+  </script>
+</body>
+</html>
